@@ -4,6 +4,7 @@ import time
 from direct.stdpy import threading
 import copyreg, copy, pickle
 from multiprocessing import Value
+from server import *
 
 
 def runGame(game, angle, ready):
@@ -21,17 +22,18 @@ if __name__ == '__main__':
         imshow = False #[True, False]
 
         game = MyApp(numObstacles)
+        server = Server()
 
         # pe = PoseEstimator(imshow, complexity)
-        # x = threading.Thread(target = pe.run, args = (angle, ready))
-        # x.start()        
+        x = threading.Thread(target = server.run(angle, ready))
+        x.start()        
         
         
         
         y = threading.Thread(target = game.go(angle, ready)) # , args = (game, angle, ready)
         y.start()
 
-        # x.join()
+        x.join()
         y.join()
 
     except KeyboardInterrupt:
