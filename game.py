@@ -5,6 +5,15 @@ from direct.actor.Actor import Actor
 from panda3d.core import Thread, DirectionalLight, AmbientLight, loadPrcFileData, CollisionNode, CollisionCapsule, CollisionSphere, CollisionTraverser, CollisionHandlerEvent, CollisionHandlerQueue, CollisionHandlerPusher, TextNode
 from plane import *
 import random
+from panda3d.core import QueuedConnectionManager
+from panda3d.core import QueuedConnectionListener
+from panda3d.core import QueuedConnectionReader
+from panda3d.core import ConnectionWriter
+from panda3d.core import PointerToConnection
+from panda3d.core import NetAddress
+from panda3d.core import NetDatagram
+from direct.distributed.PyDatagramIterator import PyDatagramIterator
+
 
 loadPrcFileData('', 'win-size 1280 800') 
 
@@ -23,7 +32,17 @@ class MyApp(ShowBase):
         self.screenHeight = 0
         self.score = 0
         self.hoopGap = 800
-        
+        self.movementThreshold = 0.2
+
+        self.cManager = QueuedConnectionManager()
+        self.cListener = QueuedConnectionListener(self.cManager, 0)
+        self.cReader = QueuedConnectionReader(self.cManager, 0)
+        self.cWriter = ConnectionWriter(self.cManager, 0)
+        self.activeConnections = []
+        self.port_address = 5000 #No-other TCP/IP services are using this port
+        self.backlog = 1000 #If we ignore 1,000 connection attempts, something is wrong!
+        self.tcpSocket = self.cManager.openTCPServerRendezvous(self.port_address, self.backlog)
+        self.cListener.addConnection(self.tcpSocket)
 
 
 
@@ -89,6 +108,49 @@ class MyApp(ShowBase):
         self.taskMgr.add(self.movePlane, "movePlane")
         self.taskMgr.add(self.animateHoops, "animateHoops")
 
+
+        self.taskMgr.add(self.tskListenerPolling, "Poll the connection listener", -39)
+        self.taskMgr.add(self.tskReaderPolling, "Poll the connection reader", -40)
+
+
+    def tskListenerPolling(self, taskdata):
+        if self.cListener.newConnectionAvailable():
+            print("new connection! ")
+
+            rendezvous = PointerToConnection()
+            netAddress = NetAddress()
+            newConnection = PointerToConnection()
+
+            if self.cListener.getNewConnection(rendezvous, netAddress, newConnection):
+                newConnection = newConnection.p()
+                self.activeConnections.append(newConnection) # Remember connection
+                self.cReader.addConnection(newConnection)     # Begin reading connection
+        return Task.cont
+
+    def tskReaderPolling(self, taskdata):
+        if self.cReader.dataAvailable():
+            datagram = NetDatagram()
+            if self.cReader.getData(datagram):
+                self.incoming(datagram)
+        return Task.cont
+
+    def incoming(self, datagram):
+        iterator = PyDatagramIterator(datagram)
+        coords = iterator.getString()
+        # print(coords)
+        coordsArr = coords.split(":")
+        left = float(coordsArr[0])
+        right = float(coordsArr[1])
+        # print(left, right)
+        if left > right + movementThreshold: # to prevent jitter we add an acceptance threshold
+            self.plane.stopMovingRight()
+            self.plane.moveLeft()
+        elif right > left + movementThreshold:
+            self.plane.stopMovingLeft()
+            self.plane.moveRight()
+
+
+
     def checkHoops(self, task):
         #get hoop Z and compare to plane Z
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
@@ -151,9 +213,6 @@ class MyApp(ShowBase):
         base.camera.setPos(planePos[0]+self.camX, planePos[1]+self.camZ, planePos[2]+self.camY)
         
         return Task.cont
-
-
-
 
 
     def generateObstacles(self):
