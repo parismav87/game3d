@@ -4,12 +4,10 @@ import time
 from direct.stdpy import threading
 import copyreg, copy, pickle
 from multiprocessing import Value
-import asyncio
-import socketio
+# from server import *
 
 if __name__ == '__main__':
     try:
-
         angle = Value('f', 0.0)
         ready = Value('b', 0)
 
@@ -21,7 +19,8 @@ if __name__ == '__main__':
         # client = Client()
 
         # pe = PoseEstimator(imshow, complexity)
-        # x = threading.Thread(target = client.run(angle, ready))
+        # s = Server()
+        # x = threading.Thread(target = s.run)
         # x.start()       
 
 
@@ -33,5 +32,7 @@ if __name__ == '__main__':
         
 
     except KeyboardInterrupt:
+        s.close()
         print("keyboard interrupt!")
+
   

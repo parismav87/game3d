@@ -135,6 +135,7 @@ class MyApp(ShowBase):
         return Task.cont
 
     def incoming(self, datagram):
+        # print(datagram)
         iterator = PyDatagramIterator(datagram)
         coords = iterator.getString()
         # print(coords)
@@ -142,10 +143,10 @@ class MyApp(ShowBase):
         left = float(coordsArr[0])
         right = float(coordsArr[1])
         # print(left, right)
-        if left > right + movementThreshold: # to prevent jitter we add an acceptance threshold
+        if left > right + self.movementThreshold: # to prevent jitter we add an acceptance threshold
             self.plane.stopMovingRight()
             self.plane.moveLeft()
-        elif right > left + movementThreshold:
+        elif right > left + self.movementThreshold:
             self.plane.stopMovingLeft()
             self.plane.moveRight()
 
