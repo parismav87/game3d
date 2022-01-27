@@ -13,6 +13,7 @@ from panda3d.core import PointerToConnection
 from panda3d.core import NetAddress
 from panda3d.core import NetDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
+import datetime
 
 
 loadPrcFileData('', 'win-size 1280 800') 
@@ -131,22 +132,24 @@ class MyApp(ShowBase):
         if self.cReader.dataAvailable():
             datagram = NetDatagram()
             if self.cReader.getData(datagram):
+                print("get data")
+                print(datagram)
                 self.incoming(datagram)
+
         return Task.cont
 
     def incoming(self, datagram):
         # print(datagram)
         iterator = PyDatagramIterator(datagram)
-        coords = iterator.getString()
-        # print(coords)
-        coordsArr = coords.split(":")
-        left = float(coordsArr[0])
-        right = float(coordsArr[1])
-        # print(left, right)
-        if left > right + self.movementThreshold: # to prevent jitter we add an acceptance threshold
+        pressure = float(iterator.getString().replace(",","."))
+
+        print(pressure)
+        if pressure>50:
+            print("moving left")
             self.plane.stopMovingRight()
             self.plane.moveLeft()
-        elif right > left + self.movementThreshold:
+        else:
+            print("moving right")
             self.plane.stopMovingLeft()
             self.plane.moveRight()
 
@@ -184,15 +187,15 @@ class MyApp(ShowBase):
         newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
         newY = planePos[2] - self.plane.downMove + self.plane.upMove
 
-        if newX < -self.screenWidth/2:
-            newX = -self.screenWidth/2
-        elif newX > self.screenWidth/2:
-            newX = self.screenWidth/2
+        # if newX < -self.screenWidth/2:
+        #     newX = -self.screenWidth/2
+        # elif newX > self.screenWidth/2:
+        #     newX = self.screenWidth/2
 
-        if newY < -self.screenHeight/2:
-            newY = -self.screenHeight/2
-        elif newY > self.screenHeight/2:
-            newY = self.screenHeight/2
+        # if newY < -self.screenHeight/2:
+        #     newY = -self.screenHeight/2
+        # elif newY > self.screenHeight/2:
+        #     newY = self.screenHeight/2
 
         # print(newX, newY)
 
@@ -212,7 +215,6 @@ class MyApp(ShowBase):
 
         
         base.camera.setPos(planePos[0]+self.camX, planePos[1]+self.camZ, planePos[2]+self.camY)
-        
         return Task.cont
 
 

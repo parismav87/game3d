@@ -4,7 +4,7 @@ import time
 from direct.stdpy import threading
 import copyreg, copy, pickle
 from multiprocessing import Value
-# from server import *
+from server import *
 
 if __name__ == '__main__':
     try:
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
         # pe = PoseEstimator(imshow, complexity)
         # s = Server()
-        # x = threading.Thread(target = s.run)
+        # x = threading.Thread(target = s.run(angle,ready))
         # x.start()       
 
 
