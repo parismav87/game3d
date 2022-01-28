@@ -151,18 +151,7 @@ class MyApp(ShowBase):
         pressurey = float(xy[1])
         print(pressurex,pressurey)
 
-        # if pressurex.startswith("-"):
-        #     print(pressurex)
-        #     print(pressurex[1:])
-        #     pressurex = float(pressurex[1:]) * (-1)
-        # else:
-        #     pressurex = float(pressurex)
-        # if pressurey.startswith("-"):
-        #     pressurey = float(pressurey[1:]) * (-1)
-        # else:
-        #     pressurey = float(pressurey)
 
-        print(pressurex, pressurey)
         if pressurex<0:
             print("moving left")
             self.plane.stopMovingRight()
