@@ -14,6 +14,7 @@ from panda3d.core import NetAddress
 from panda3d.core import NetDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import datetime
+import re
 
 
 loadPrcFileData('', 'win-size 1280 800') 
@@ -141,10 +142,28 @@ class MyApp(ShowBase):
     def incoming(self, datagram):
         # print(datagram)
         iterator = PyDatagramIterator(datagram)
-        pressure = float(iterator.getString().replace(",","."))
+        pressure = iterator.getString().replace(",",".")
+        xy = pressure.split(";")
+        # print(pressure)
+        # print(xy)
+        # xy = re.sub(r'[^\x00-\x7F]+','-', xy)
+        pressurex = float(xy[0])
+        pressurey = float(xy[1])
+        print(pressurex,pressurey)
 
-        print(pressure)
-        if pressure>50:
+        # if pressurex.startswith("-"):
+        #     print(pressurex)
+        #     print(pressurex[1:])
+        #     pressurex = float(pressurex[1:]) * (-1)
+        # else:
+        #     pressurex = float(pressurex)
+        # if pressurey.startswith("-"):
+        #     pressurey = float(pressurey[1:]) * (-1)
+        # else:
+        #     pressurey = float(pressurey)
+
+        print(pressurex, pressurey)
+        if pressurex<0:
             print("moving left")
             self.plane.stopMovingRight()
             self.plane.moveLeft()
@@ -152,7 +171,14 @@ class MyApp(ShowBase):
             print("moving right")
             self.plane.stopMovingLeft()
             self.plane.moveRight()
-
+        if pressurey<0:
+            print("moving down")
+            self.plane.stopMovingUp()
+            self.plane.moveDown()
+        else:
+            print("moving up")
+            self.plane.stopMovingDown()
+            self.plane.moveUp()
 
 
     def checkHoops(self, task):

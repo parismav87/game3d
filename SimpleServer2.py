@@ -52,10 +52,11 @@ while True:
         socketBuffer = tempbuffer[1]
         measurements=tempbuffer[0].split('\t')
         for i in measurements:
-            items=i.split(';')
+            # print(i)
+            # items=i.split(';')
             # print(items)
             pkg = NetDatagram()
-            pkg.addString(items[0])
+            pkg.addString(i)
             cWriter.send(pkg, myConnection)
                 # data = s.recv(1024)
                 # s.close() 
