@@ -18,9 +18,13 @@ class Plane():
         self.rightMove = 0
         self.upMove = 0
         self.downMove = 0
+        self.xAngle = 0
+        self.yAngle = 0
+        self.zAngle = 0
 
         self.actor.setScale(5,5,5)
         self.actor.setPos(0, -1000, 100)
+        self.actor.setHpr(self.xAngle, self.yAngle, self.zAngle)
 
         self.actor.accept("arrow_left", self.moveLeft)
         self.actor.accept("arrow_left-repeat", self.moveLeft)
@@ -41,13 +45,13 @@ class Plane():
 
     def recoverRotationHorizontal(self, planeHpr):
         horizontalRotation = planeHpr[2]
-        newHorizontal = 0
+        newHorizontal = self.xAngle
 
-        if horizontalRotation>0: #recover horizontal
-            if horizontalRotation > self.rotationRecovery:
+        if horizontalRotation>self.xAngle: #recover horizontal
+            if horizontalRotation > self.xAngle + self.rotationRecovery:
                 newHorizontal = horizontalRotation - self.rotationRecovery
-        elif horizontalRotation < 0:
-            if horizontalRotation < -self.rotationRecovery:
+        elif horizontalRotation < self.xAngle:
+            if horizontalRotation < self.xAngle - self.rotationRecovery:
                 newHorizontal = horizontalRotation + self.rotationRecovery
 
 
@@ -58,13 +62,14 @@ class Plane():
 
     def recoverRotationVertical(self, planeHpr):
         verticalRotation = planeHpr[1]
-        newVertical = 0
+        newVertical = self.yAngle
 
-        if verticalRotation > 0: #recover vertical
-            if verticalRotation > self.rotationRecovery:
+        if verticalRotation > self.yAngle: #recover vertical
+            if verticalRotation > self.yAngle + self.rotationRecovery:
                 newVertical = verticalRotation - self.rotationRecovery
-        elif verticalRotation < 0:
-            if verticalRotation < - self.rotationRecovery:
+
+        elif verticalRotation < self.yAngle:
+            if verticalRotation < self.yAngle - self.rotationRecovery:
                 newVertical = verticalRotation + self.rotationRecovery
 
         
@@ -72,23 +77,24 @@ class Plane():
 
 
     def rotatePlaneHorizontal(self, planeHpr):
-        rotationHorizontal = planeHpr[2]-self.rotationSpeed*self.leftMove+self.rotationSpeed*self.rightMove
+        # print(planeHpr[0])
+        rotationHorizontal = planeHpr[2] - self.rotationSpeed*self.leftMove + self.rotationSpeed*self.rightMove
 
-        if rotationHorizontal > self.rotationSpeedLimit:
-            rotationHorizontal = self.rotationSpeedLimit
-        elif rotationHorizontal < -self.rotationSpeedLimit:
-            rotationHorizontal = -self.rotationSpeedLimit
+        if rotationHorizontal > self.xAngle + self.rotationSpeedLimit:
+            rotationHorizontal = self.xAngle + self.rotationSpeedLimit
+        elif rotationHorizontal < self.xAngle - self.rotationSpeedLimit:
+            rotationHorizontal = self.xAngle - self.rotationSpeedLimit
 
         self.actor.setHpr(planeHpr[0], planeHpr[1], rotationHorizontal) 
 
         
     def rotatePlaneVertical(self, planeHpr):
-        rotationVertical = planeHpr[1]-self.rotationSpeed*self.downMove+self.rotationSpeed*self.upMove
+        rotationVertical = planeHpr[1] - self.rotationSpeed*self.downMove + self.rotationSpeed*self.upMove
 
-        if rotationVertical > self.rotationSpeedLimit:
-            rotationVertical = self.rotationSpeedLimit
-        elif rotationVertical < -self.rotationSpeedLimit:
-            rotationVertical = -self.rotationSpeedLimit
+        if rotationVertical > self.yAngle + self.rotationSpeedLimit:
+            rotationVertical = self.yAngle + self.rotationSpeedLimit
+        elif rotationVertical < self.yAngle - self.rotationSpeedLimit:
+            rotationVertical = self.yAngle - self.rotationSpeedLimit 
 
         self.actor.setHpr(planeHpr[0], rotationVertical, planeHpr[2]) 
 

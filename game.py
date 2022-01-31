@@ -79,7 +79,7 @@ class MyApp(ShowBase):
 
         self.taskMgr.add(self.getAngle, "GetAngle")
 
-        self.plane = Plane("assets/luft.gltf")
+        self.plane = Plane("assets/luft4.gltf")
         self.plane.actor.reparentTo(self.render)
         planePos = self.plane.actor.getPos()
 
@@ -180,7 +180,7 @@ class MyApp(ShowBase):
     def animateHoops(self, task):
         hpr = self.hoops[0].getHpr()
         for hoop in self.hoops:
-            hoop.setHpr(hpr[0], hpr[1], hpr[2]+1)
+            hoop.setHpr(hpr[0], hpr[1], hpr[2])
         return Task.cont
 
     def handleCollision(self, entry):
@@ -194,6 +194,7 @@ class MyApp(ShowBase):
         
 
     def movePlane(self, task):
+
         planePos = self.plane.actor.getPos()
         planeHpr = self.plane.actor.getHpr()
         # print(planeHpr[2])
@@ -238,16 +239,16 @@ class MyApp(ShowBase):
             hoop = Actor("assets/target.gltf")
             hoop.setScale(50,50,50)
             hoop.setPos(random.randint(-300,300),-700+(i*self.hoopGap),random.randint(80, 300))
-            # hoop.setHpr(90,0,0)
+            hoop.setHpr(0,90,0)
             # hoop.setColor(1,0,0,1)
             hoop.reparentTo(self.render)
             self.hoops.append(hoop)
 
             colliderNode2 = CollisionNode('hoopCollider')
-            colliderNode2.addSolid(CollisionCapsule(0, 0, 0, 0, 1, 0, 1))
+            colliderNode2.addSolid(CollisionCapsule(0, 0, 0, 0, 0, 0.1, 1))
             hoopCollider = hoop.attachNewNode(colliderNode2)
             hoopCollider.setPythonTag("hoop", hoop)
-            # hoopCollider.show()
+            hoopCollider.show()
 
     def getAngle(self, task):
         # print(self.angle.value)
