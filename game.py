@@ -194,20 +194,19 @@ class MyApp(ShowBase):
         planePos = self.plane.actor.getPos()
         planeHpr = self.plane.actor.getHpr()
         # print(planeHpr[2])
-        # print(planePos[0])
+        # print(planePos[2])
 
         newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
+        if newX > self.plane.rightLimit:
+            newX = self.plane.rightLimit
+        elif newX < self.plane.leftLimit:
+            newX = self.plane.leftLimit
+
         newY = planePos[2] - self.plane.downMove + self.plane.upMove
-
-        # if newX < -self.screenWidth/2:
-        #     newX = -self.screenWidth/2
-        # elif newX > self.screenWidth/2:
-        #     newX = self.screenWidth/2
-
-        # if newY < -self.screenHeight/2:
-        #     newY = -self.screenHeight/2
-        # elif newY > self.screenHeight/2:
-        #     newY = self.screenHeight/2
+        if newY > self.plane.upLimit:
+            newY = self.plane.upLimit
+        elif newY < self.plane.downLimit:
+            newY = self.plane.downLimit
 
         # print(newX, newY)
 
@@ -225,14 +224,16 @@ class MyApp(ShowBase):
         else:
             self.plane.recoverRotationVertical(planeHpr)
 
-        base.camera.setPos(planePos[0] + self.camX, planePos[1] + self.camZ, planePos[2] + self.camY)
+
+        camCoords = base.camera.getPos()
+        base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2]) #+ self.camY
         return Task.cont
 
     def generateObstacles(self):
         for i in range(self.numObstacles):
             hoop = Actor("assets/target.gltf")
             hoop.setScale(50, 50, 50)
-            hoop.setPos(random.randint(-300, 300), -700 + (i * self.hoopGap), random.randint(80, 300))
+            hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
             hoop.setHpr(0, 90, 0)
             # hoop.setColor(1,0,0,1)
             hoop.reparentTo(self.render)
@@ -255,4 +256,3 @@ class MyApp(ShowBase):
     def go(self, angle, ready):
         self.initialize(angle, ready)
         self.run()
-

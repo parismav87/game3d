@@ -9,10 +9,12 @@ class Plane():
 
         self.actor = Actor(model)
         self.speed = 2
-        self.rotationSpeed = 1
+        self.acceleration = 1
+        self.rotationAcceleration = 1.5
+        self.rotationSpeed = 2
         self.rotationRecovery = 2
         self.turnSpeed = 1
-        self.turnSpeedLimit = 2
+        self.turnSpeedLimit = 10
         self.rotationSpeedLimit = 45
         self.leftMove = 0
         self.rightMove = 0
@@ -21,6 +23,11 @@ class Plane():
         self.xAngle = 0
         self.yAngle = 0
         self.zAngle = 0
+        self.rightLimit = 140
+        self.leftLimit = -140
+        self.upLimit = 200
+        self.downLimit = 50
+
 
         self.actor.setScale(5,5,5)
         self.actor.setPos(0, -1000, 100)
@@ -100,25 +107,30 @@ class Plane():
 
 
     def moveLeft(self):
-        self.leftMove = self.turnSpeed
+        self.leftMove += self.acceleration*self.turnSpeed
+        if self.leftMove > self.turnSpeedLimit:
+            self.leftMove = self.turnSpeedLimit
+
 
     def stopMovingLeft(self):
         self.leftMove = 0
 
     def moveRight(self):
-        self.rightMove = self.turnSpeed
+        self.rightMove += self.acceleration*self.turnSpeed
+        if self.rightMove > self.turnSpeedLimit:
+            self.rightMove = self.turnSpeedLimit
 
     def stopMovingRight(self):
         self.rightMove = 0
 
     def moveUp(self):
-        self.upMove = self.turnSpeed
+        self.upMove +=  self.acceleration*self.turnSpeed
 
     def stopMovingUp(self):
         self.upMove = 0
 
     def moveDown(self):
-        self.downMove = self.turnSpeed
+        self.downMove += self.acceleration*self.turnSpeed
 
     def stopMovingDown(self):
         self.downMove = 0
