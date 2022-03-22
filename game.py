@@ -78,10 +78,12 @@ class MyApp(ShowBase):
 
         self.angle = angle
         self.scoreText = TextNode('scoreText')
+        self.scoreText.setFont(self.font)
         self.scoreText.setText(str(self.score))
         self.scoreTextPath = aspect2d.attachNewNode(self.scoreText)
-        self.scoreTextPath.setScale(0.07)
-        self.scoreTextPath.setPos(1, 0, 0.9)
+        self.scoreTextPath.setScale(0.15)
+        self.scoreTextPath.setPos(1, 0, 0.8)
+        self.scoreTextPath.hide()
 
 
         # self.calibrationText = TextNode('calibrationText')
@@ -143,6 +145,7 @@ class MyApp(ShowBase):
         self.playing = False
         self.score = 0
         self.scoreText.setText(str(self.score))
+        self.scoreTextPath.hide()
         self.plane.reset()
         self.taskMgr.remove("checkHoops")
         self.taskMgr.remove("movePlane")
@@ -156,6 +159,7 @@ class MyApp(ShowBase):
         self.taskMgr.add(self.movePlane, "movePlane")
         self.taskMgr.add(self.animateHoops, "animateHoops")
         self.mainMenu.mainMenuScreen.hide()
+        self.scoreTextPath.show()
         self.playing = True
 
     def calibrate(self):
