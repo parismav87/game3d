@@ -49,6 +49,9 @@ class Plane():
         self.actor.accept("arrow_down-repeat", self.moveDown)
         self.actor.accept("arrow_down-up", self.stopMovingDown)
 
+    def reset(self):
+        self.actor.setPos(0, -1000, 100)
+        self.actor.setHpr(self.xAngle, self.yAngle, self.zAngle)
 
     def recoverRotationHorizontal(self, planeHpr):
         horizontalRotation = planeHpr[2]

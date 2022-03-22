@@ -11,7 +11,7 @@ if __name__ == '__main__':
         angle = Value('f', 0.0)
         ready = Value('b', 0)
 
-        numObstacles = 10 #[20,100,500]
+        numObstacles = 20 #[20,100,500]
         complexity = 0 #[0,1,2]
         imshow = False #[True, False]
 

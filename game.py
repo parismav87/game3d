@@ -15,7 +15,10 @@ from panda3d.core import NetAddress
 from panda3d.core import NetDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import datetime
-import re
+from direct.gui.DirectGui import *
+from mainMenu import *
+import time
+import numpy as np
 
 loadPrcFileData('', 'win-size 1280 800')
 
@@ -24,6 +27,7 @@ class MyApp(ShowBase):
 
     def __init__(self, numObstacles):
         self.collecting = False
+        self.calibrating = False
         self.baselineX = 0
         self.baselineY = 0
         self.numObstacles = numObstacles
@@ -47,6 +51,14 @@ class MyApp(ShowBase):
         self.backlog = 1000  # If we ignore 1,000 connection attempts, something is wrong!
         self.tcpSocket = self.cManager.openTCPServerRendezvous(self.port_address, self.backlog)
         self.cListener.addConnection(self.tcpSocket)
+        self.playing = False
+        self.baselineXarray = []
+        self.baselineYarray = []
+        self.xmin = 0
+        self.ymin = 0
+        self.xmax = 0
+        self.ymax = 0
+
 
     def initialize(self, angle, ready):
 
@@ -54,6 +66,8 @@ class MyApp(ShowBase):
         self.cTrav = CollisionTraverser()
         self.pusher = CollisionHandlerPusher()
         self.pusher.add_in_pattern("%fn-into-%in")
+
+        self.font = self.loader.loadFont("assets/SuperMario256.ttf")
 
         dlight = AmbientLight('dlight')
         dlnp = render.attachNewNode(dlight)
@@ -68,6 +82,23 @@ class MyApp(ShowBase):
         self.scoreTextPath = aspect2d.attachNewNode(self.scoreText)
         self.scoreTextPath.setScale(0.07)
         self.scoreTextPath.setPos(1, 0, 0.9)
+
+
+        # self.calibrationText = TextNode('calibrationText')
+        # self.calibrationText.setText("Calibrating...")
+        # self.calibrationTextPath = aspect2d.attachNewNode(self.calibrationText)
+        # self.calibrationTextPath.setScale(0.1)
+        # self.calibrationText.setFont(self.font)
+        # self.calibrationTextPath.setPos(-0.4, 0, 0.1)
+        # self.calibrationTextPath.hide()
+
+        # self.countdownText = TextNode('countdownText')
+        # self.countdownText.setText('10')
+        # self.countdownTextPath = aspect2d.attachNewNode(self.countdownText)
+        # self.countdownTextPath.setScale(0.1)
+        # self.countdownText.setFont(self.font)
+        # self.countdownTextPath.setPos(-0.15, 0, 0.3)
+        # self.countdownTextPath.hide()
 
         base.setBackgroundColor(r=136 / 255, g=210 / 255, b=235 / 255)
         self.scene = self.loader.loadModel("models/environment")
@@ -85,8 +116,7 @@ class MyApp(ShowBase):
         base.camera.setPos(0, planePos[1] + self.camZ, planePos[2] + self.camY)
         base.camera.setHpr(0, self.camAngle, 0)
 
-        self.generateObstacles()
-        self.taskMgr.add(self.checkHoops, "checkHoops")
+        
         # self.taskMgr.add(self.moveObstacles, "moveObstacles")
 
         colliderNode = CollisionNode('planeCollider')
@@ -102,11 +132,48 @@ class MyApp(ShowBase):
 
         self.accept("planeCollider-into-hoopCollider", self.handleCollision)
 
-        self.taskMgr.add(self.movePlane, "movePlane")
-        self.taskMgr.add(self.animateHoops, "animateHoops")
+        
 
         self.taskMgr.add(self.tskListenerPolling, "Poll the connection listener", -39)
         self.taskMgr.add(self.tskReaderPolling, "Poll the connection reader", -40)
+
+        self.mainMenu = MainMenu(self)
+
+    def resetGame(self):
+        self.playing = False
+        self.score = 0
+        self.scoreText.setText(str(self.score))
+        self.plane.reset()
+        self.taskMgr.remove("checkHoops")
+        self.taskMgr.remove("movePlane")
+        self.taskMgr.remove("animateHoops")
+        self.mainMenu.mainMenuScreen.show()
+
+
+    def startGame(self):
+        self.generateObstacles()
+        self.taskMgr.add(self.checkHoops, "checkHoops")
+        self.taskMgr.add(self.movePlane, "movePlane")
+        self.taskMgr.add(self.animateHoops, "animateHoops")
+        self.mainMenu.mainMenuScreen.hide()
+        self.playing = True
+
+    def calibrate(self):
+        if not self.calibrating:
+            self.calibrating = True
+            self.mainMenu.calibrateBtn.setText("Stop")
+        else:
+            self.calibrating = False
+            self.mainMenu.calibrateBtn.setText("Calibrate")
+            self.extractBaselines()
+
+
+    def extractBaselines(self):
+        if len(self.baselineXarray) !=0 and len(self.baselineYarray) !=0:
+            self.xmin = np.min(self.baselineXarray)
+            self.xmax = np.max(self.baselineXarray)
+            self.ymin = np.min(self.baselineYarray)
+            self.ymax = np.max(self.baselineYarray)
 
     def tskListenerPolling(self, taskdata):
         if self.cListener.newConnectionAvailable():
@@ -150,6 +217,10 @@ class MyApp(ShowBase):
             self.baselineY = pressurey
         print(pressurex, pressurey)
 
+        if self.calibrating:
+            self.baselineXarray.append(pressurex)
+            self.baselineYarray.append(pressurey)
+
         if pressurex < 0:
             print("moving left")
             self.plane.stopMovingRight()
@@ -171,6 +242,8 @@ class MyApp(ShowBase):
         # get hoop Z and compare to plane Z
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
         if self.hoops[0].getPos()[1] < self.plane.actor.getPos()[1]:
+            if len(self.hoops) == 1:
+                self.resetGame()
             self.hoops.pop(0).delete()
         return Task.cont
 
@@ -181,6 +254,7 @@ class MyApp(ShowBase):
         return Task.cont
 
     def handleCollision(self, entry):
+
         self.score += 1
         self.scoreText.setText(str(self.score))
         collider = entry.getIntoNodePath()
@@ -188,45 +262,49 @@ class MyApp(ShowBase):
         collider.clearPythonTag("hoop")
         hoop.delete()
         self.hoops.pop(0)
+        if len(self.hoops) == 0:
+            self.resetGame()
 
     def movePlane(self, task):
 
-        planePos = self.plane.actor.getPos()
-        planeHpr = self.plane.actor.getHpr()
-        # print(planeHpr[2])
-        # print(planePos[2])
+        if self.playing:
 
-        newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
-        if newX > self.plane.rightLimit:
-            newX = self.plane.rightLimit
-        elif newX < self.plane.leftLimit:
-            newX = self.plane.leftLimit
+            planePos = self.plane.actor.getPos()
+            planeHpr = self.plane.actor.getHpr()
+            # print(planeHpr[2])
+            # print(planePos[2])
 
-        newY = planePos[2] - self.plane.downMove + self.plane.upMove
-        if newY > self.plane.upLimit:
-            newY = self.plane.upLimit
-        elif newY < self.plane.downLimit:
-            newY = self.plane.downLimit
+            newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
+            if newX > self.plane.rightLimit:
+                newX = self.plane.rightLimit
+            elif newX < self.plane.leftLimit:
+                newX = self.plane.leftLimit
 
-        # print(newX, newY)
+            newY = planePos[2] - self.plane.downMove + self.plane.upMove
+            if newY > self.plane.upLimit:
+                newY = self.plane.upLimit
+            elif newY < self.plane.downLimit:
+                newY = self.plane.downLimit
 
-        self.plane.actor.setPos(newX, planePos[1] + self.plane.speed, newY)
+            # print(newX, newY)
 
-        if self.plane.leftMove != 0 or self.plane.rightMove != 0:
-            self.plane.rotatePlaneHorizontal(planeHpr)
-        else:
-            self.plane.recoverRotationHorizontal(planeHpr)
+            self.plane.actor.setPos(newX, planePos[1] + self.plane.speed, newY)
 
-        planeHpr = self.plane.actor.getHpr()
+            if self.plane.leftMove != 0 or self.plane.rightMove != 0:
+                self.plane.rotatePlaneHorizontal(planeHpr)
+            else:
+                self.plane.recoverRotationHorizontal(planeHpr)
 
-        if self.plane.upMove != 0 or self.plane.downMove != 0:
-            self.plane.rotatePlaneVertical(planeHpr)
-        else:
-            self.plane.recoverRotationVertical(planeHpr)
+            planeHpr = self.plane.actor.getHpr()
+
+            if self.plane.upMove != 0 or self.plane.downMove != 0:
+                self.plane.rotatePlaneVertical(planeHpr)
+            else:
+                self.plane.recoverRotationVertical(planeHpr)
 
 
-        camCoords = base.camera.getPos()
-        base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2]) #+ self.camY
+            camCoords = base.camera.getPos()
+            base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2]) #+ self.camY
         return Task.cont
 
     def generateObstacles(self):
@@ -243,7 +321,7 @@ class MyApp(ShowBase):
             colliderNode2.addSolid(CollisionCapsule(0, 0, 0, 0, 0, 0.1, 1))
             hoopCollider = hoop.attachNewNode(colliderNode2)
             hoopCollider.setPythonTag("hoop", hoop)
-            hoopCollider.show()
+            # hoopCollider.show()
 
     def getAngle(self, task):
         # print(self.angle.value)
