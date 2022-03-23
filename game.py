@@ -213,8 +213,12 @@ class MyApp(ShowBase):
         # print(pressure)
         # print(xy)
         # xy = re.sub(r'[^\x00-\x7F]+','-', xy)
-        pressurex = float(xy[0]) - self.baselineX
-        pressurey = float(xy[1]) - self.baselineY
+        # pressurex = float(xy[0]) - self.baselineX
+        # pressurey = float(xy[1]) - self.baselineY
+
+        pressurex = 2 * (float(xy[0]) - self.xmin)/(self.xmax - self.xmin) -1 #normalize to [-1, 1]
+        pressurey = 2 * (float(xy[1]) - self.ymin)/(self.ymax - self.ymin) -1 #normalize to [-1, 1]
+
         if not self.collecting:
             self.collecting = True
             self.baselineX = pressurex
