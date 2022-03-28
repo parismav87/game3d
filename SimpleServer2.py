@@ -8,6 +8,7 @@ from panda3d.core import PointerToConnection
 from panda3d.core import NetAddress
 from panda3d.core import NetDatagram
 import time
+import pandas as pd
 
 cManager = QueuedConnectionManager()
 cReader = QueuedConnectionReader(cManager, 0)
@@ -21,7 +22,8 @@ if myConnection:
     cReader.addConnection(myConnection)
 socketBuffer = ''
 timestamp=[]
-
+Hz=10
+#writer = pd.ExcelWriter('Timestamps.xlsx')
 
 def SocketListener():
     global socketBuffer
@@ -55,32 +57,44 @@ def SocketListener():
 threadSocket = Thread(target = SocketListener)
 threadSocket.start()
 
-while True:
+testing_timestamp=[]
+try:
+    while True:
 
-    last_pkg = socketBuffer.split('ENDSTART')[-1]
+        last_pkg = socketBuffer.split('ENDSTART')[-1]
 
-    if ('START' in last_pkg):
-        last_pkg=last_pkg.replace('START','')
+        if ('START' in last_pkg):
+            last_pkg=last_pkg.replace('START','')
 
-    #last_pkg.replace('END','')
-    print(last_pkg)
-
-    if 'END' in last_pkg:
+        #last_pkg.replace('END','')
         print(last_pkg)
-        CoPX = last_pkg.split()[1]
 
-        CoPY = last_pkg.split()[2]
-
-
-
-        print(CoPX, CoPY)
+        if 'END' in last_pkg:
+            #print(last_pkg)
 
 
-        pkg = NetDatagram()
-        pkg.addString(CoPX+';'+CoPY)
+            CoPX = last_pkg.split()[1]
 
-        cWriter.send(pkg, myConnection)
-        time.sleep(1/20)
+            CoPY = last_pkg.split()[2]
+            testing_timestamp.append((last_pkg.split()[0].split('_')[1]))
+
+
+            print(CoPX, CoPY)
+
+
+            pkg = NetDatagram()
+            pkg.addString(CoPX+';'+CoPY)
+
+            cWriter.send(pkg, myConnection)
+            time.sleep(1/12)
+except KeyboardInterrupt:
+    print('Manually stopped')
+    print(testing_timestamp)
+    timestamp_df = pd.DataFrame({'Timestamp 16-12':testing_timestamp})
+    timestamp_df.to_csv('Timestamp at 16-12.csv')
+
+
+
 
 
 

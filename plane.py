@@ -9,11 +9,11 @@ class Plane():
 
         self.actor = Actor(model)
         self.speed = 2
-        self.acceleration = 1
-        self.rotationAcceleration = 1.5
+        self.acceleration = 2
+        self.rotationAcceleration = 2
         self.rotationSpeed = 2
         self.rotationRecovery = 2
-        self.turnSpeed = 1
+        self.turnSpeed = 0.2
         self.turnSpeedLimit = 10
         self.rotationSpeedLimit = 45
         self.leftMove = 0
@@ -109,8 +109,10 @@ class Plane():
         self.actor.setHpr(planeHpr[0], rotationVertical, planeHpr[2]) 
 
 
-    def moveLeft(self):
-        self.leftMove += self.acceleration*self.turnSpeed
+    def moveLeft(self,speed):
+        speed = abs(speed)
+
+        self.leftMove += 3*speed*self.turnSpeed
         if self.leftMove > self.turnSpeedLimit:
             self.leftMove = self.turnSpeedLimit
 
@@ -118,22 +120,29 @@ class Plane():
     def stopMovingLeft(self):
         self.leftMove = 0
 
-    def moveRight(self):
-        self.rightMove += self.acceleration*self.turnSpeed
+    def moveRight(self,speed):
+        speed = abs(speed)
+        self.rightMove += 3*speed*self.turnSpeed
         if self.rightMove > self.turnSpeedLimit:
             self.rightMove = self.turnSpeedLimit
 
     def stopMovingRight(self):
         self.rightMove = 0
 
-    def moveUp(self):
-        self.upMove +=  self.acceleration*self.turnSpeed
+    def moveUp(self,speed):
+        speed = abs(speed)
+        self.upMove +=  3*speed*self.turnSpeed
+        if self.upMove > self.turnSpeedLimit:
+            self.upMove = self.turnSpeedLimit
 
     def stopMovingUp(self):
         self.upMove = 0
 
-    def moveDown(self):
-        self.downMove += self.acceleration*self.turnSpeed
+    def moveDown(self,speed):
+        speed = abs(speed)
+        self.downMove += 3*speed*self.turnSpeed
+        if self.downMove > self.turnSpeedLimit:
+            self.downMove = self.turnSpeedLimit
 
     def stopMovingDown(self):
         self.downMove = 0

@@ -41,6 +41,7 @@ class MyApp(ShowBase):
         self.score = 0
         self.hoopGap = 800
         self.movementThreshold = 0.2
+        self.margin = 0.2
 
         self.cManager = QueuedConnectionManager()
         self.cListener = QueuedConnectionListener(self.cManager, 0)
@@ -172,12 +173,15 @@ class MyApp(ShowBase):
             self.extractBaselines()
 
 
+
     def extractBaselines(self):
         if len(self.baselineXarray) !=0 and len(self.baselineYarray) !=0:
+            print(self.baselineXarray)
             self.xmin = np.min(self.baselineXarray)
             self.xmax = np.max(self.baselineXarray)
             self.ymin = np.min(self.baselineYarray)
             self.ymax = np.max(self.baselineYarray)
+            print(self.xmin,self.xmax,self.ymin,self.ymax)
 
     def tskListenerPolling(self, taskdata):
         if self.cListener.newConnectionAvailable():
@@ -204,6 +208,7 @@ class MyApp(ShowBase):
         return Task.cont
 
     def incoming(self, datagram):
+
         # print(datagram)
 
         iterator = PyDatagramIterator(datagram)
@@ -211,40 +216,53 @@ class MyApp(ShowBase):
         # print(pressure)
         xy = pressure.split(";")
         # print(pressure)
-        # print(xy)
+
         # xy = re.sub(r'[^\x00-\x7F]+','-', xy)
-        # pressurex = float(xy[0]) - self.baselineX
-        # pressurey = float(xy[1]) - self.baselineY
+        pressurex = float(xy[0])
+        pressurey = float(xy[1])
 
-        pressurex = 2 * (float(xy[0]) - self.xmin)/(self.xmax - self.xmin) -1 #normalize to [-1, 1]
-        pressurey = 2 * (float(xy[1]) - self.ymin)/(self.ymax - self.ymin) -1 #normalize to [-1, 1]
+        if self.playing:
+            pressurex = 2 * (float(xy[0]) - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
+            pressurey = 2 * (float(xy[1]) - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
-        if not self.collecting:
-            self.collecting = True
-            self.baselineX = pressurex
-            self.baselineY = pressurey
-        print(pressurex, pressurey)
+        # if not self.collecting:
+        #     self.collecting = True
+        #     self.baselineX = pressurex
+        #     self.baselineY = pressurey
+        # print(pressurex, pressurey)
 
         if self.calibrating:
             self.baselineXarray.append(pressurex)
             self.baselineYarray.append(pressurey)
+        print(pressurex,pressurey)
 
-        if pressurex < 0:
-            print("moving left")
-            self.plane.stopMovingRight()
-            self.plane.moveLeft()
-        else:
-            print("moving right")
-            self.plane.stopMovingLeft()
-            self.plane.moveRight()
-        if pressurey < 0:
-            print("moving down")
+        if abs(pressurex) >= self.margin:
+            if pressurex < 0:
+                #print("moving left")
+
+                self.plane.stopMovingRight()
+                self.plane.moveLeft(pressurex)
+            else:
+                #print("moving right")
+                self.plane.stopMovingLeft()
+                self.plane.moveRight(pressurex)
+
+        if abs(pressurey) >= self.margin:
+            if pressurey < 0:
+                #print("moving down")
+                self.plane.stopMovingUp()
+                self.plane.moveDown(pressurey)
+            else:
+                #print("moving up")
+                self.plane.stopMovingDown()
+                self.plane.moveUp(pressurey)
+        if abs(pressurex) < self.margin and abs(pressurey) < self.margin:
             self.plane.stopMovingUp()
-            self.plane.moveDown()
-        else:
-            print("moving up")
             self.plane.stopMovingDown()
-            self.plane.moveUp()
+            self.plane.stopMovingLeft()
+            self.plane.stopMovingRight()
+
+
 
     def checkHoops(self, task):
         # get hoop Z and compare to plane Z
