@@ -1,2 +1,9 @@
 *.blend
 *.blend1
+*.pyc
+*.gltf
+*.ttf
+*.exe
+*.aliases
+*.ini
+*.csv
