@@ -15,7 +15,7 @@ class Plane():
         self.rotationRecovery = 2
         self.turnSpeed = 0.2
         self.turnSpeedLimit = 10
-        self.rotationSpeedLimit = 45
+        self.rotationSpeedLimit = 15
         self.leftMove = 0
         self.rightMove = 0
         self.upMove = 0
@@ -33,20 +33,20 @@ class Plane():
         self.actor.setPos(0, -1000, 100)
         self.actor.setHpr(self.xAngle, self.yAngle, self.zAngle)
 
-        self.actor.accept("arrow_left", self.moveLeft)
-        self.actor.accept("arrow_left-repeat", self.moveLeft)
+        self.actor.accept("arrow_left", self.moveLeft, [-1])
+        self.actor.accept("arrow_left-repeat", self.moveLeft, [-1])
         self.actor.accept("arrow_left-up", self.stopMovingLeft)
 
-        self.actor.accept("arrow_right", self.moveRight)
-        self.actor.accept("arrow_right-repeat", self.moveRight)
+        self.actor.accept("arrow_right", self.moveRight, [1])
+        self.actor.accept("arrow_right-repeat", self.moveRight, [1])
         self.actor.accept("arrow_right-up", self.stopMovingRight)
 
-        self.actor.accept("arrow_up", self.moveUp)
-        self.actor.accept("arrow_up-repeat", self.moveUp)
+        self.actor.accept("arrow_up", self.moveUp, [1])
+        self.actor.accept("arrow_up-repeat", self.moveUp, [1])
         self.actor.accept("arrow_up-up", self.stopMovingUp)
 
-        self.actor.accept("arrow_down", self.moveDown)
-        self.actor.accept("arrow_down-repeat", self.moveDown)
+        self.actor.accept("arrow_down", self.moveDown, [-1])
+        self.actor.accept("arrow_down-repeat", self.moveDown, [-1])
         self.actor.accept("arrow_down-up", self.stopMovingDown)
 
     def reset(self):

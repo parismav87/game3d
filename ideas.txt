@@ -1,0 +1,4 @@
+ideas
+
+1. button to calibrate center of balance
+2. ease up rotation of plane on up/down left/right
