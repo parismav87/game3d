@@ -29,6 +29,7 @@ class MyApp(ShowBase):
     def __init__(self, numObstacles):
         self.collecting = False
         self.calibrating = False
+        self.centering = False
         self.baselineX = 0
         self.baselineY = 0
         self.numObstacles = numObstacles
@@ -56,10 +57,14 @@ class MyApp(ShowBase):
         self.playing = False
         self.baselineXarray = []
         self.baselineYarray = []
+        self.centerXarray = []
+        self.centerYarray = []
         self.xmin = 0
         self.ymin = 0
         self.xmax = 0
         self.ymax = 0
+        self.centerX = 0
+        self.centerY = 0
 
 
     def initialize(self, angle, ready):
@@ -177,6 +182,24 @@ class MyApp(ShowBase):
             self.mainMenu.calibrateBtn.setText("Calibrate")
             self.extractBaselines()
 
+    def center(self):
+        if not self.centering:
+            self.centering = True
+            self.mainMenu.centerBtn.setText("Stop")
+        else:
+            self.centering = False
+            self.mainMenu.centerBtn.setText("Center")
+            self.extractCenter()
+
+    def extractCenter(self):
+        if len(self.centerXarray) !=0 and len(self.centerYarray) !=0:
+            self.centerX = np.mean(self.centerXarray)
+            self.centerY = np.mean(self.centerYarray)
+            print(self.centerX, self.centerY)
+
+            if len(self.baselineXarray)!=0: #normalize if range exists
+                self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
+                self.centerY = 2 * (self.centerY - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
 
     def extractBaselines(self):
@@ -187,6 +210,10 @@ class MyApp(ShowBase):
             self.ymin = np.min(self.baselineYarray)
             self.ymax = np.max(self.baselineYarray)
             print(self.xmin,self.xmax,self.ymin,self.ymax)
+
+            if len(self.centerXarray) != 0: # normalize centers if centers exist
+                self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
+                self.centerY = 2 * (self.centerY - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
     def tskListenerPolling(self, taskdata):
         if self.cListener.newConnectionAvailable():
@@ -241,10 +268,15 @@ class MyApp(ShowBase):
         if self.calibrating:
             self.baselineXarray.append(pressurex)
             self.baselineYarray.append(pressurey)
-        print(pressurex,pressurey)
+        # print(pressurex,pressurey)
 
-        if abs(pressurex) >= self.margin:
-            if pressurex < 0:
+        if self.centering:
+            self.centerXarray.append(pressurex)
+            self.centerYarray.append(pressurey)
+        # print(pressurex, pressurey)
+
+        if abs(pressurex) >= self.centerX + self.margin:
+            if pressurex < self.centerX:
                 #print("moving left")
 
                 self.plane.stopMovingRight()
@@ -254,8 +286,8 @@ class MyApp(ShowBase):
                 self.plane.stopMovingLeft()
                 self.plane.moveRight(pressurex)
 
-        if abs(pressurey) >= self.margin:
-            if pressurey < 0:
+        if abs(pressurey) >= self.centerY + self.margin:
+            if pressurey < self.centerY:
                 #print("moving down")
                 self.plane.stopMovingUp()
                 self.plane.moveDown(pressurey)
@@ -264,7 +296,7 @@ class MyApp(ShowBase):
                 self.plane.stopMovingDown()
                 self.plane.moveUp(pressurey)
 
-        if abs(pressurex) < self.margin and abs(pressurey) < self.margin:
+        if abs(pressurex) < self.centerX + self.margin and abs(pressurey) < self.centerY + self.margin: # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()

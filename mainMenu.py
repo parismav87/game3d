@@ -8,5 +8,6 @@ class MainMenu():
 		# game.font = loader.loadFont("assets/SuperMario256.ttf")
 		label = DirectLabel(text = "Flight", parent = self.mainMenuScreen, scale = 0.1, pos = (0, 0, 0.2), text_font = game.font)
 		self.calibrateBtn = DirectButton(text = "Calibrate", command = game.calibrate, pos = (0, 0, 0), parent = self.mainMenuScreen, scale = 0.07, pad=(0.1,0.1), text_font = game.font)
-		self.playBtn = DirectButton(text = "Play", command = game.startGame, pos = (0, 0, -0.2), parent = self.mainMenuScreen, scale = 0.07, pad=(0.1,0.1), text_font = game.font)
+		self.centerBtn = DirectButton(text = "Center", command = game.center, pos = (0, 0, -0.2), parent = self.mainMenuScreen, scale = 0.07, pad=(0.1,0.1), text_font = game.font)
+		self.playBtn = DirectButton(text = "Play", command = game.startGame, pos = (0, 0, -0.4), parent = self.mainMenuScreen, scale = 0.07, pad=(0.1,0.1), text_font = game.font)
 		self.mainMenuScreen.show()
