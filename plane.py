@@ -112,7 +112,7 @@ class Plane():
     def moveLeft(self,speed):
         speed = abs(speed)
 
-        self.leftMove += 3*speed*self.turnSpeed
+        self.leftMove += 1*speed*self.turnSpeed
         if self.leftMove > self.turnSpeedLimit:
             self.leftMove = self.turnSpeedLimit
 
@@ -122,7 +122,7 @@ class Plane():
 
     def moveRight(self,speed):
         speed = abs(speed)
-        self.rightMove += 3*speed*self.turnSpeed
+        self.rightMove += 1*speed*self.turnSpeed
         if self.rightMove > self.turnSpeedLimit:
             self.rightMove = self.turnSpeedLimit
 
@@ -131,7 +131,7 @@ class Plane():
 
     def moveUp(self,speed):
         speed = abs(speed)
-        self.upMove +=  3*speed*self.turnSpeed
+        self.upMove +=  1*speed*self.turnSpeed
         if self.upMove > self.turnSpeedLimit:
             self.upMove = self.turnSpeedLimit
 
@@ -140,7 +140,7 @@ class Plane():
 
     def moveDown(self,speed):
         speed = abs(speed)
-        self.downMove += 3*speed*self.turnSpeed
+        self.downMove += 1*speed*self.turnSpeed
         if self.downMove > self.turnSpeedLimit:
             self.downMove = self.turnSpeedLimit
 

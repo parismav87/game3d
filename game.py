@@ -41,7 +41,7 @@ class MyApp(ShowBase):
         self.score = 0
         self.hoopGap = 800
         self.movementThreshold = 0.2
-        self.margin = 0.2
+        self.margin = 0.3
 
         self.cManager = QueuedConnectionManager()
         self.cListener = QueuedConnectionListener(self.cManager, 0)
@@ -221,6 +221,8 @@ class MyApp(ShowBase):
         pressurex = float(xy[0])
         pressurey = float(xy[1])
 
+
+        # xy[0][i] xy[0][i-1]
         if self.playing:
             pressurex = 2 * (float(xy[0]) - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
             pressurey = 2 * (float(xy[1]) - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
@@ -256,6 +258,7 @@ class MyApp(ShowBase):
                 #print("moving up")
                 self.plane.stopMovingDown()
                 self.plane.moveUp(pressurey)
+
         if abs(pressurex) < self.margin and abs(pressurey) < self.margin:
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
