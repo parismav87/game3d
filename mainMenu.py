@@ -1,9 +1,9 @@
 from direct.gui.DirectGui import *
 
 
-
 class MainMenu():
 	def __init__(self, game):
+		self.game = game
 		self.mainMenuScreen = DirectDialog(frameSize = (-0.7, 0.7, -0.7, 0.7), fadeScreen = 0.4, relief = DGG.FLAT)
 		# game.font = loader.loadFont("assets/SuperMario256.ttf")
 		label = DirectLabel(text = "Flight", parent = self.mainMenuScreen, scale = 0.1, pos = (0, 0, 0.2), text_font = game.font)

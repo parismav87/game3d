@@ -17,6 +17,7 @@ from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import datetime
 from direct.gui.DirectGui import *
 from mainMenu import *
+from settingsMenu import *
 import time
 import numpy as np
 
@@ -135,12 +136,16 @@ class MyApp(ShowBase):
 
         self.accept("planeCollider-into-hoopCollider", self.handleCollision)
 
-        
+        self.settingsBtn = DirectButton(text = "Settings", command = self.openSettings, pos = (-1.4,0,0.9), scale = 0.04, pad=(0.1,0.1))
 
         self.taskMgr.add(self.tskListenerPolling, "Poll the connection listener", -39)
         self.taskMgr.add(self.tskReaderPolling, "Poll the connection reader", -40)
 
         self.mainMenu = MainMenu(self)
+        self.settingsMenu = SettingsMenu(self)
+
+    def openSettings(self):
+        self.settingsMenu.settingsMenuScreen.show()
 
     def resetGame(self):
         self.playing = False
