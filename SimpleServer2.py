@@ -25,6 +25,15 @@ timestamp=[]
 Hz=10
 #writer = pd.ExcelWriter('Timestamps.xlsx')
 
+
+def q_to_ypr(q):
+    if q:
+        yaw = (math.atan2(2 * q[1] * q[2] - 2 * q[0] * q[3], 2 * q[0] ** 2 + 2 * q[1] ** 2 - 1))
+        roll = (-1 * math.asin(2 * q[1] * q[3] + 2 * q[0] * q[2]))
+        pitch = (math.atan2(2 * q[2] * q[3] - 2 * q[0] * q[1], 2 * q[0] ** 2 + 2 * q[3] ** 2 - 1))
+        return [yaw, pitch, roll]
+
+
 def SocketListener():
     global socketBuffer
     global timestamp

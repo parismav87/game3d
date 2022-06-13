@@ -8,6 +8,7 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 def minMaxNormalisation(arr):
     maxx = np.amax(arr)
@@ -25,6 +26,14 @@ def stringToFloat(arr):
         result.append(f)
     return result
 
+def q_to_ypr(q):
+    if q:
+        yaw = (math.atan2(2 * q[1] * q[2] - 2 * q[0] * q[3], 2 * q[0] ** 2 + 2 * q[1] ** 2 - 1))
+        roll = (-1 * math.asin(2 * q[1] * q[3] + 2 * q[0] * q[2]))
+        pitch = (math.atan2(2 * q[2] * q[3] - 2 * q[0] * q[1], 2 * q[0] ** 2 + 2 * q[3] ** 2 - 1))
+        return [yaw, pitch, roll]
+
+
 
 
 cManager = QueuedConnectionManager()
@@ -36,16 +45,23 @@ ip_address = '127.0.0.1'
 timeout = 3000
 myConnection = cManager.openTCPClientConnection(ip_address, port_address, timeout)
 
-df = pd.read_csv('swing.txt', sep='\t')
+df = pd.read_csv('quat.csv', sep=',')
 df= df[1:]
-weightLeft = df['WeightA'].tolist()
-weightRight = df['WeightB'].tolist()
+# print(df)
+w = df['w'].tolist()
+x = df['x'].tolist()
+y = df['y'].tolist()
+z = df['z'].tolist()
+# weightLeft = df['WeightA'].tolist()
+# weightRight = df['WeightB'].tolist()
 
-weightLeft = stringToFloat(weightLeft)
-weightRight = stringToFloat(weightRight)
+# w = stringToFloat(w)
+# x = stringToFloat(x)
+# y = stringToFloat(y)
+# z = stringToFloat(z)
 
-weightLeft = minMaxNormalisation(weightLeft)
-weightRight = minMaxNormalisation(weightRight)
+# weightLeft = minMaxNormalisation(weightLeft)
+# weightRight = minMaxNormalisation(weightRight)
 
 # plt.plot(weightLeft)
 # plt.plot(weightRight)
@@ -58,9 +74,9 @@ weightRight = minMaxNormalisation(weightRight)
 if myConnection:
     cReader.addConnection(myConnection)
     print("connected!")
-    for k,v in enumerate(weightLeft):
+    for k,v in enumerate(w):
         pkg = NetDatagram()
-        coords = str(v) + ':' + str(weightRight[k])
+        coords = str(w) + ";" + str(x) + ";" + str(y) + ";" + str(z)
         pkg.addString(coords)
         cWriter.send(pkg, myConnection)
         time.sleep(0.01)
