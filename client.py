@@ -52,6 +52,8 @@ w = df['w'].tolist()
 x = df['x'].tolist()
 y = df['y'].tolist()
 z = df['z'].tolist()
+
+# print(df)
 # weightLeft = df['WeightA'].tolist()
 # weightRight = df['WeightB'].tolist()
 
@@ -76,7 +78,8 @@ if myConnection:
     print("connected!")
     for k,v in enumerate(w):
         pkg = NetDatagram()
-        coords = str(w) + ";" + str(x) + ";" + str(y) + ";" + str(z)
+        ypr = q_to_ypr([w[k], x[k], y[k], z[k]])
+        coords = str(ypr[0]) + ";" + str(ypr[1]) + ";" + str(ypr[2]) 
         pkg.addString(coords)
         cWriter.send(pkg, myConnection)
         time.sleep(0.01)

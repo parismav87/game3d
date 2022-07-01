@@ -59,10 +59,14 @@ class MyApp(ShowBase):
         self.baselineYarray = []
         self.centerXarray = []
         self.centerYarray = []
-        self.xmin = 0
-        self.ymin = 0
-        self.xmax = 0
-        self.ymax = 0
+        # self.xmin = 0
+        # self.ymin = 0
+        # self.xmax = 0
+        # self.ymax = 0
+        self.xmin = -0.5
+        self.ymin = -0.5
+        self.xmax = 0.5
+        self.ymax = 0.5
         self.centerX = 0
         self.centerY = 0
 
@@ -239,6 +243,8 @@ class MyApp(ShowBase):
 
         return Task.cont
 
+
+
     def incoming(self, datagram):
 
         # print(datagram)
@@ -246,18 +252,19 @@ class MyApp(ShowBase):
         iterator = PyDatagramIterator(datagram)
         pressure = iterator.getString().replace(",", ".")
         # print(pressure)
-        xy = pressure.split(";")
-        # print(pressure)
+        ypr = pressure.split(";")
+        print(ypr)
 
         # xy = re.sub(r'[^\x00-\x7F]+','-', xy)
-        pressurex = float(xy[0])
-        pressurey = float(xy[1])
+        yaw = float(ypr[0])
+        pitch = float(ypr[1])
+        roll = float(ypr[2])
 
 
         # xy[0][i] xy[0][i-1]
         if self.playing:
-            pressurex = 2 * (float(xy[0]) - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
-            pressurey = 2 * (float(xy[1]) - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
+            yaw = 2 * (float(ypr[0]) - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
+            pitch = 2 * (float(ypr[1]) - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
         # if not self.collecting:
         #     self.collecting = True
@@ -266,37 +273,37 @@ class MyApp(ShowBase):
         # print(pressurex, pressurey)
 
         if self.calibrating:
-            self.baselineXarray.append(pressurex)
-            self.baselineYarray.append(pressurey)
+            self.baselineXarray.append(yaw)
+            self.baselineYarray.append(pitch)
         # print(pressurex,pressurey)
 
         if self.centering:
-            self.centerXarray.append(pressurex)
-            self.centerYarray.append(pressurey)
+            self.centerXarray.append(yaw)
+            self.centerYarray.append(pitch)
         # print(pressurex, pressurey)
 
-        if abs(pressurex) >= self.centerX + self.margin:
-            if pressurex < self.centerX:
+        if abs(yaw) >= self.centerX + self.margin:
+            if yaw < self.centerX:
                 #print("moving left")
 
                 self.plane.stopMovingRight()
-                self.plane.moveLeft(pressurex)
+                self.plane.moveLeft(yaw)
             else:
                 #print("moving right")
                 self.plane.stopMovingLeft()
-                self.plane.moveRight(pressurex)
+                self.plane.moveRight(yaw)
 
-        if abs(pressurey) >= self.centerY + self.margin:
-            if pressurey < self.centerY:
+        if abs(pitch) >= self.centerY + self.margin:
+            if pitch < self.centerY:
                 #print("moving down")
                 self.plane.stopMovingUp()
-                self.plane.moveDown(pressurey)
+                self.plane.moveDown(pitch)
             else:
                 #print("moving up")
                 self.plane.stopMovingDown()
-                self.plane.moveUp(pressurey)
+                self.plane.moveUp(pitch)
 
-        if abs(pressurex) < self.centerX + self.margin and abs(pressurey) < self.centerY + self.margin: # balanced (no move)
+        if abs(yaw) < self.centerX + self.margin and abs(pitch) < self.centerY + self.margin: # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
