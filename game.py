@@ -20,6 +20,7 @@ from mainMenu import *
 from settingsMenu import *
 import time
 import numpy as np
+import pandas as pd
 
 loadPrcFileData('', 'win-size 1280 800')
 
@@ -44,6 +45,8 @@ class MyApp(ShowBase):
         self.hoopGap = 800
         self.movementThreshold = 0.2
         self.margin = 0.3
+        self.trajectoryx = []
+        self.trajectoryy = []
 
         self.cManager = QueuedConnectionManager()
         self.cListener = QueuedConnectionListener(self.cManager, 0)
@@ -153,6 +156,9 @@ class MyApp(ShowBase):
         self.settingsMenu.settingsMenuScreen.show()
 
     def resetGame(self):
+        print('Game reseting')
+        trajectory_DF = pd.DataFrame({'Trajector_X':self.trajectoryx,'Trajectory_Y':self.trajectoryy})
+        trajectory_DF.to_csv('Speed_Trajectory.csv')
         self.playing = False
         self.score = 0
         self.scoreText.setText(str(self.score))
@@ -162,6 +168,7 @@ class MyApp(ShowBase):
         self.taskMgr.remove("movePlane")
         self.taskMgr.remove("animateHoops")
         self.mainMenu.mainMenuScreen.show()
+
 
 
     def startGame(self):
@@ -278,25 +285,34 @@ class MyApp(ShowBase):
         if abs(pressurex) >= self.centerX + self.margin:
             if pressurex < self.centerX:
                 #print("moving left")
-
+                self.trajectoryx.append(-pressurex)
                 self.plane.stopMovingRight()
                 self.plane.moveLeft(pressurex)
             else:
                 #print("moving right")
+                self.trajectoryx.append(pressurex)
                 self.plane.stopMovingLeft()
                 self.plane.moveRight(pressurex)
+        else:
+            self.trajectoryx.append(0)
 
         if abs(pressurey) >= self.centerY + self.margin:
             if pressurey < self.centerY:
                 #print("moving down")
+                self.trajectoryy.append(-pressurey)
                 self.plane.stopMovingUp()
                 self.plane.moveDown(pressurey)
             else:
                 #print("moving up")
+                self.trajectoryy.append(pressurey)
                 self.plane.stopMovingDown()
                 self.plane.moveUp(pressurey)
+        else:
+            self.trajectoryy.append(0)
 
         if abs(pressurex) < self.centerX + self.margin and abs(pressurey) < self.centerY + self.margin: # balanced (no move)
+            self.trajectoryy.append(0)
+            self.trajectoryx.append(0)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
