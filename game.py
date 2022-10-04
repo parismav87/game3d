@@ -20,6 +20,7 @@ from mainMenu import *
 from settingsMenu import *
 import time
 import numpy as np
+import csv
 
 loadPrcFileData('', 'win-size 1280 800')
 
@@ -66,6 +67,9 @@ class MyApp(ShowBase):
         self.centerX = 0
         self.centerY = 0
 
+        self.pressurex = 0
+        self.pressurey = 0
+
 
     def initialize(self, angle, ready):
 
@@ -92,6 +96,9 @@ class MyApp(ShowBase):
         self.scoreTextPath.setPos(1, 0, 0.8)
         self.scoreTextPath.hide()
 
+        self.outputCSV = open('movement.csv', 'w', newline= '')
+        self.csvWriter = csv.writer(self.outputCSV, delimiter=',')
+        self.csvWriter.writerow(['planeX,planeY,planeZ,targetX,targetY,targetZ,pressureX,pressureY'])
 
         # self.calibrationText = TextNode('calibrationText')
         # self.calibrationText.setText("Calibrating...")
@@ -265,6 +272,9 @@ class MyApp(ShowBase):
         #     self.baselineY = pressurey
         # print(pressurex, pressurey)
 
+        self.pressurey = pressurey
+        self.pressurex = pressurex
+
         if self.calibrating:
             self.baselineXarray.append(pressurex)
             self.baselineYarray.append(pressurey)
@@ -368,6 +378,10 @@ class MyApp(ShowBase):
             else:
                 self.plane.recoverRotationVertical(planeHpr)
 
+            currentPos = self.plane.actor.getPos()
+            firstObstacle = self.hoops[0].getPos()
+            row = [str(currentPos[0]) + ',' + str(currentPos[2]) + ',' + str(currentPos[1]) + ',' + str(firstObstacle[0]) + ',' + str(firstObstacle[2]) + ',' + str(firstObstacle[1]) + ',' + str(self.pressurex) + ',' + str(self.pressurey)]
+            self.csvWriter.writerow(row)
 
             camCoords = base.camera.getPos()
             base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2]) #+ self.camY
