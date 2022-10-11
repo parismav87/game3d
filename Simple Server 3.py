@@ -16,6 +16,8 @@ import pandas as pd
 import warnings
 import math
 
+
+
 class MARG:
 
     def __init__(self):
@@ -242,6 +244,11 @@ try:
                     yaw_list.append(math.degrees(yaw))
                     pitch_list.append(math.degrees(pitch))
                     roll_list.append(math.degrees(roll))
+
+                    pkg = NetDatagram()
+                    pkg.addString(str(yaw)+';'+str(pitch)+';'+str(roll))
+                    cWriter.send(pkg, myConnection)
+                    # time.sleep(1/12) # don't know if this is the correct value, should we sleep here?
         time.sleep(1/20)
 
 except KeyboardInterrupt:

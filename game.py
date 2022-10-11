@@ -70,6 +70,23 @@ class MyApp(ShowBase):
         self.pressurex = 0
         self.pressurey = 0
 
+        self.yaw = 0
+        self.pitch = 0
+        self.roll = 0
+        self.yawMin = 0
+        self.yawMax = 0
+        self.pitchMin = 0
+        self.pitchMax = 0
+        self.rollMin = 0
+        self.rollMax = 0
+        self.yawBaseline = []
+        self.pitchBaseline = []
+        self.rollBaseline = []
+
+        self.balanceYaw = 0
+        self.balancePitch = 0
+        self.balanceRoll = 0
+
 
     def initialize(self, angle, ready):
 
@@ -210,6 +227,19 @@ class MyApp(ShowBase):
 
 
     def extractBaselines(self):
+
+        if len(self.yawBaseline)!=0 and len(self.pitchBaseline)!=0 and len(self.rollBaseline)!=0:
+            self.yawMin = np.min(self.yawBaseline)
+            self.yawMax = np.max(self.yawBaseline)
+            self.pitchMin = np.min(self.pitchBaseline)
+            self.pitchMax = np.max(self.pitchBaseline)
+            self.rollMin = np.min(self.rollBaseline)
+            self.rollMax = np.max(self.rollBaseline)
+
+            self.balanceYaw = 2 * (self.balanceYaw - self.yawMin) / (self.yawMax - self.yawMin) - 1 
+            self.balancePitch = 2 * (self.balancePitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1 
+            self.balanceRoll = 2 * (self.balanceRoll - self.rollMin) / (self.rollMax - self.rollMin) - 1 
+
         if len(self.baselineXarray) !=0 and len(self.baselineYarray) !=0:
             print(self.baselineXarray)
             self.xmin = np.min(self.baselineXarray)
@@ -242,11 +272,79 @@ class MyApp(ShowBase):
             if self.cReader.getData(datagram):
                 # print("get data")
                 # print(datagram)
-                self.incoming(datagram)
+                # self.incomingCOP(datagram)
+                self.incomingYPR(datagram)
 
         return Task.cont
 
-    def incoming(self, datagram):
+    def incomingYPR(self, datagram):
+        iterator = PyDatagramIterator(datagram)
+        yprString = iterator.getString().replace(",", ".")
+        yprList = yprString.split(";")
+
+        yaw = float(yprList[0])
+        pitch = float(yprList[1]) # y 
+        roll = float(yprList[2]) # x
+
+        if self.playing:
+            yaw = 2 * (yaw - self.yawMin) / (self.yawMax - self.yawMin) - 1  # normalize to [-1, 1]
+            pitch = 2 * (pitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1  # normalize to [-1, 1]
+            roll = 2 * (roll - self.rollMin) / (self.rollMax - self.rollMin) - 1  # normalize to [-1, 1]
+
+        # if not self.collecting:
+        #     self.collecting = True
+        #     self.baselineX = pressurex
+        #     self.baselineY = pressurey
+        # print(pressurex, pressurey)
+
+        self.yaw = yaw
+        self.pitch = pitch
+        self.roll = roll
+
+        if self.calibrating:
+            self.yawBaseline.append(yaw)
+            self.pitchBaseline.append(pitch)
+            self.rollBaseline.append(roll)
+        # print(pressurex,pressurey)
+
+        # if self.centering:
+        #     self.centerXarray.append(pressurex)
+        #     self.centerYarray.append(pressurey)
+        # print(pressurex, pressurey)
+
+        if abs(self.roll) >= self.balanceRoll + self.margin:
+            if self.roll < self.balanceRoll:
+                #print("moving left")
+
+                self.plane.stopMovingRight()
+                self.plane.moveLeft(self.roll)
+            else:
+                #print("moving right")
+                self.plane.stopMovingLeft()
+                self.plane.moveRight(self.roll)
+
+        if abs(self.pitch) >= self.balancePitch + self.margin:
+            if self.pitch < self.balancePitch:
+                #print("moving down")
+                self.plane.stopMovingUp()
+                self.plane.moveDown(self.pitch)
+            else:
+                #print("moving up")
+                self.plane.stopMovingDown()
+                self.plane.moveUp(self.pitch)
+
+        if abs(self.roll) < self.balanceRoll + self.margin and abs(self.pitch) < self.balancePitch + self.margin: # balanced (no move)
+            self.plane.stopMovingUp()
+            self.plane.stopMovingDown()
+            self.plane.stopMovingLeft()
+            self.plane.stopMovingRight()
+
+
+
+
+
+
+    def incomingCOP(self, datagram):
 
         # print(datagram)
 
