@@ -43,8 +43,8 @@ class MyApp(ShowBase):
         self.screenHeight = 0
         self.score = 0
         self.hoopGap = 800
-        self.movementThreshold = 0.2
-        self.margin = 0.3
+        self.movementThreshold = 0.25
+        #self.margin = 0.3
 
         self.cManager = QueuedConnectionManager()
         self.cListener = QueuedConnectionListener(self.cManager, 0)
@@ -86,6 +86,13 @@ class MyApp(ShowBase):
         self.balanceYaw = 0
         self.balancePitch = 0
         self.balanceRoll = 0
+
+        self.centerYawarray = []
+        self.centerPitcharray = []
+
+        self.currentYaw_angle = 0
+        self.currentPitch_angle = 0
+        self.currentRoll_angle = 0
 
 
     def initialize(self, angle, ready):
@@ -229,6 +236,8 @@ class MyApp(ShowBase):
     def extractBaselines(self):
 
         if len(self.yawBaseline)!=0 and len(self.pitchBaseline)!=0 and len(self.rollBaseline)!=0:
+
+
             self.yawMin = np.min(self.yawBaseline)
             self.yawMax = np.max(self.yawBaseline)
             self.pitchMin = np.min(self.pitchBaseline)
@@ -236,9 +245,13 @@ class MyApp(ShowBase):
             self.rollMin = np.min(self.rollBaseline)
             self.rollMax = np.max(self.rollBaseline)
 
-            self.balanceYaw = 2 * (self.balanceYaw - self.yawMin) / (self.yawMax - self.yawMin) - 1 
-            self.balancePitch = 2 * (self.balancePitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1 
-            self.balanceRoll = 2 * (self.balanceRoll - self.rollMin) / (self.rollMax - self.rollMin) - 1 
+            # self.balanceYaw = 2 * (self.balanceYaw - self.yawMin) / (self.yawMax - self.yawMin) - 1
+            # self.balancePitch = 2 * (self.balancePitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1
+            # self.balanceRoll = 2 * (self.balanceRoll - self.rollMin) / (self.rollMax - self.rollMin) - 1
+
+            self.balanceYaw = 0
+            self.balancePitch = 0
+            self.balanceRoll = 0
 
         if len(self.baselineXarray) !=0 and len(self.baselineYarray) !=0:
             print(self.baselineXarray)
@@ -246,7 +259,7 @@ class MyApp(ShowBase):
             self.xmax = np.max(self.baselineXarray)
             self.ymin = np.min(self.baselineYarray)
             self.ymax = np.max(self.baselineYarray)
-            print(self.xmin,self.xmax,self.ymin,self.ymax)
+            print('limits',self.xmin,self.xmax,self.ymin,self.ymax)
 
             if len(self.centerXarray) != 0: # normalize centers if centers exist
                 self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
@@ -281,15 +294,24 @@ class MyApp(ShowBase):
         iterator = PyDatagramIterator(datagram)
         yprString = iterator.getString().replace(",", ".")
         yprList = yprString.split(";")
+        print(yprList)
 
-        yaw = float(yprList[0])
-        pitch = float(yprList[1]) # y 
-        roll = float(yprList[2]) # x
+        yaw = float(yprList[0]) # x
+        pitch = float(yprList[1]) # y
+        roll = float(yprList[2])
+
+        #print(yaw, pitch, roll)
+
+        self.currentRoll_angle = roll
+        self.currentPitch_angle = pitch
+        self.currentYaw_angle = yaw
 
         if self.playing:
-            yaw = 2 * (yaw - self.yawMin) / (self.yawMax - self.yawMin) - 1  # normalize to [-1, 1]
-            pitch = 2 * (pitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1  # normalize to [-1, 1]
-            roll = 2 * (roll - self.rollMin) / (self.rollMax - self.rollMin) - 1  # normalize to [-1, 1]
+            yaw = 2 * (self.currentYaw_angle - self.yawMin) / (self.yawMax - self.yawMin) - 1  # normalize to [-1, 1]
+            pitch = 2 * (self.currentPitch_angle - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1  # normalize to [-1, 1]
+            roll = 2 * (self.currentRoll_angle - self.rollMin) / (self.rollMax - self.rollMin) - 1  # normalize to [-1, 1]
+
+        #print(self.currentYaw_angle, self.currentPitch_angle, self.currentRoll_angle)
 
         # if not self.collecting:
         #     self.collecting = True
@@ -301,29 +323,31 @@ class MyApp(ShowBase):
         self.pitch = pitch
         self.roll = roll
 
+
+
         if self.calibrating:
-            self.yawBaseline.append(yaw)
-            self.pitchBaseline.append(pitch)
-            self.rollBaseline.append(roll)
+            self.yawBaseline.append(self.currentYaw_angle)
+            self.pitchBaseline.append(self.currentPitch_angle)
+            self.rollBaseline.append(self.currentRoll_angle)
         # print(pressurex,pressurey)
 
-        # if self.centering:
-        #     self.centerXarray.append(pressurex)
-        #     self.centerYarray.append(pressurey)
-        # print(pressurex, pressurey)
+        if self.centering:
+            self.centerYawarray.append(self.yaw)
+            self.centerPitcharray.append(self.pitch)
+        #print(pressurex, pressurey)
 
-        if abs(self.roll) >= self.balanceRoll + self.margin:
-            if self.roll < self.balanceRoll:
+        if abs(self.yaw) >= self.balanceYaw + self.movementThreshold:
+            if self.yaw < self.balanceYaw:
                 #print("moving left")
 
                 self.plane.stopMovingRight()
-                self.plane.moveLeft(self.roll)
+                self.plane.moveLeft(self.yaw)
             else:
                 #print("moving right")
                 self.plane.stopMovingLeft()
-                self.plane.moveRight(self.roll)
+                self.plane.moveRight(self.yaw)
 
-        if abs(self.pitch) >= self.balancePitch + self.margin:
+        if abs(self.pitch) >= self.balancePitch + self.movementThreshold:
             if self.pitch < self.balancePitch:
                 #print("moving down")
                 self.plane.stopMovingUp()
@@ -333,7 +357,7 @@ class MyApp(ShowBase):
                 self.plane.stopMovingDown()
                 self.plane.moveUp(self.pitch)
 
-        if abs(self.roll) < self.balanceRoll + self.margin and abs(self.pitch) < self.balancePitch + self.margin: # balanced (no move)
+        if abs(self.yaw) < self.balanceYaw + self.movementThreshold and abs(self.pitch) < self.balancePitch + self.movementThreshold: # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
@@ -383,7 +407,7 @@ class MyApp(ShowBase):
             self.centerYarray.append(pressurey)
         # print(pressurex, pressurey)
 
-        if abs(pressurex) >= self.centerX + self.margin:
+        if abs(pressurex) >= self.centerX + self.movementThreshold:
             if pressurex < self.centerX:
                 #print("moving left")
 
@@ -394,7 +418,7 @@ class MyApp(ShowBase):
                 self.plane.stopMovingLeft()
                 self.plane.moveRight(pressurex)
 
-        if abs(pressurey) >= self.centerY + self.margin:
+        if abs(pressurey) >= self.centerY + self.movementThreshold:
             if pressurey < self.centerY:
                 #print("moving down")
                 self.plane.stopMovingUp()
@@ -404,7 +428,7 @@ class MyApp(ShowBase):
                 self.plane.stopMovingDown()
                 self.plane.moveUp(pressurey)
 
-        if abs(pressurex) < self.centerX + self.margin and abs(pressurey) < self.centerY + self.margin: # balanced (no move)
+        if abs(pressurex) < self.centerX + self.movementThreshold and abs(pressurey) < self.centerY + self.movementThreshold: # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
