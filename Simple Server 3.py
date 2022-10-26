@@ -141,9 +141,9 @@ def SocketListener():
                             #print(data)
                             if len(data) != 0:
                                 socketBuffer += data.decode('utf-16')
-                                currenttime2=time.time()
-                                timestamp.append(currenttime2-currenttime)
-                                currenttime=currenttime2
+                                #currenttime2=time.time()
+                                #timestamp.append(currenttime2-currenttime)
+                                #currenttime=currenttime2
 
 
 
@@ -165,9 +165,10 @@ raw_my = []
 raw_mz = []
 ypr = []
 testing_timestamp=[]
-static = pd.read_csv(r'static.txt', delimiter='\\t', decimal=',')
+static = pd.read_csv(r'static2.txt', delimiter='\\t', decimal=',')
 check_buffer = 0
 check_buffer2 = 0
+step = 0
 try:
     print('READY')
     while True:
@@ -201,9 +202,9 @@ try:
                             check_buffer += 1
 
                             acc = np.array([float(data[0]), float(data[1]), float(data[2])])
-                            gyro = np.array([math.radians(float(data[3])), math.radians(float(data[4])), math.radians(float(data[5]))])
-                            #gyro = np.array([math.radians(float(data[3])), math.radians(float(data[4])), math.radians(float(data[5]))])
-                            #print(gyro)
+                            gyro = np.array([math.radians(float(data[3])-static['Gyro2X'].mean()), math.radians(float(data[4])-static['Gyro2Y'].mean()), math.radians(float(data[5])-static['Gyro2Z'].mean())])
+                            # gyro = np.array([math.radians(float(data[3])), math.radians(float(data[4])), math.radians(float(data[5]))])
+                            # print(gyro)
                             mag = np.array([float(data[6]), float(data[7]), float(data[8])])
                             q = record.update(gyroscope=gyro,accelerometer=acc,magnetometer=mag)
                             ypr = q_to_ypr(q)
@@ -217,10 +218,13 @@ try:
                                 yaw_list.append(yaw)
                                 pitch_list.append(pitch)
                                 roll_list.append(roll)
-                                pkg = NetDatagram()
-                                pkg.addString(str(yaw) + ';' + str(pitch) + ';' + str(roll))
-                                cWriter.send(pkg, myConnection)
-                                print(str(yaw) + ';' + str(pitch) + ';' + str(roll))
+                                step += 1
+                                if step == 22:
+                                    pkg = NetDatagram()
+                                    pkg.addString(str(yaw) + ';' + str(pitch) + ';' + str(roll))
+                                    cWriter.send(pkg, myConnection)
+                                    #print(str(yaw) + ';' + str(pitch) + ';' + str(roll))
+                                    step = 0
                                 raw_gx.append((gyro[0]))
                                 raw_gy.append((gyro[1]))
                                 raw_gz.append((gyro[2]))

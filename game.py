@@ -43,7 +43,7 @@ class MyApp(ShowBase):
         self.screenHeight = 0
         self.score = 0
         self.hoopGap = 800
-        self.movementThreshold = 0.25
+        self.movementThreshold = 0.4
         #self.margin = 0.3
 
         self.cManager = QueuedConnectionManager()
@@ -232,6 +232,9 @@ class MyApp(ShowBase):
                 self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
                 self.centerY = 2 * (self.centerY - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
+        self.balanceYaw = 0
+        self.balancePitch = 0
+        self.balanceRoll = 0
 
     def extractBaselines(self):
 
@@ -244,6 +247,8 @@ class MyApp(ShowBase):
             self.pitchMax = np.max(self.pitchBaseline)
             self.rollMin = np.min(self.rollBaseline)
             self.rollMax = np.max(self.rollBaseline)
+            print('limits ', ' yawMin: ',self.yawMin,' yawMax: ' ,self.yawMax,' rollMin: ', self.rollMin,' rollMax: ', self.rollMax)
+
 
             # self.balanceYaw = 2 * (self.balanceYaw - self.yawMin) / (self.yawMax - self.yawMin) - 1
             # self.balancePitch = 2 * (self.balancePitch - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1
@@ -259,7 +264,8 @@ class MyApp(ShowBase):
             self.xmax = np.max(self.baselineXarray)
             self.ymin = np.min(self.baselineYarray)
             self.ymax = np.max(self.baselineYarray)
-            print('limits',self.xmin,self.xmax,self.ymin,self.ymax)
+
+
 
             if len(self.centerXarray) != 0: # normalize centers if centers exist
                 self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
@@ -294,11 +300,11 @@ class MyApp(ShowBase):
         iterator = PyDatagramIterator(datagram)
         yprString = iterator.getString().replace(",", ".")
         yprList = yprString.split(";")
-        print(yprList)
+        #print(yprList)
 
         yaw = float(yprList[0]) # x
-        pitch = float(yprList[1]) # y
-        roll = float(yprList[2])
+        pitch = float(yprList[1])
+        roll = float(yprList[2]) # y
 
         #print(yaw, pitch, roll)
 
@@ -321,7 +327,7 @@ class MyApp(ShowBase):
 
         self.yaw = yaw
         self.pitch = pitch
-        self.roll = roll
+        self.roll = -roll
 
 
 
@@ -333,7 +339,7 @@ class MyApp(ShowBase):
 
         if self.centering:
             self.centerYawarray.append(self.yaw)
-            self.centerPitcharray.append(self.pitch)
+            self.centerPitcharray.append(self.roll)
         #print(pressurex, pressurey)
 
         if abs(self.yaw) >= self.balanceYaw + self.movementThreshold:
@@ -341,23 +347,23 @@ class MyApp(ShowBase):
                 #print("moving left")
 
                 self.plane.stopMovingRight()
-                self.plane.moveLeft(self.yaw)
+                self.plane.moveLeft(self.yaw/2)
             else:
                 #print("moving right")
                 self.plane.stopMovingLeft()
-                self.plane.moveRight(self.yaw)
+                self.plane.moveRight(self.yaw/2)
 
-        if abs(self.pitch) >= self.balancePitch + self.movementThreshold:
-            if self.pitch < self.balancePitch:
+        if abs(self.roll) >= self.balanceRoll + self.movementThreshold:
+            if self.roll < self.balanceRoll:
                 #print("moving down")
                 self.plane.stopMovingUp()
-                self.plane.moveDown(self.pitch)
+                self.plane.moveDown(self.roll/2)
             else:
                 #print("moving up")
                 self.plane.stopMovingDown()
-                self.plane.moveUp(self.pitch)
+                self.plane.moveUp(self.roll/2)
 
-        if abs(self.yaw) < self.balanceYaw + self.movementThreshold and abs(self.pitch) < self.balancePitch + self.movementThreshold: # balanced (no move)
+        if abs(self.yaw) < self.balanceYaw + self.movementThreshold and abs(self.roll) < self.balanceRoll + self.movementThreshold: # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
@@ -511,7 +517,7 @@ class MyApp(ShowBase):
 
     def generateObstacles(self):
         for i in range(self.numObstacles):
-            hoop = Actor("assets/target.gltf")
+            hoop = Actor("assets/target.gl tf")
             hoop.setScale(50, 50, 50)
             hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
             hoop.setHpr(0, 90, 0)
