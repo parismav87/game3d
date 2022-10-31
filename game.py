@@ -148,7 +148,7 @@ class MyApp(ShowBase):
 
         self.taskMgr.add(self.getAngle, "GetAngle")
 
-        self.plane = Plane("assets/luft4.gltf")
+        self.plane = Plane("assets/luft6.gltf")
         self.plane.actor.reparentTo(self.render)
         planePos = self.plane.actor.getPos()
 
@@ -517,7 +517,7 @@ class MyApp(ShowBase):
 
     def generateObstacles(self):
         for i in range(self.numObstacles):
-            hoop = Actor("assets/target.gl tf")
+            hoop = Actor("assets/target.gltf")
             hoop.setScale(50, 50, 50)
             hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
             hoop.setHpr(0, 90, 0)
