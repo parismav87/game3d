@@ -35,6 +35,7 @@ class MyApp(ShowBase):
         self.baselineY = 0
         self.numObstacles = numObstacles
         self.hoops = []
+        self.clouds = []
         self.camX = 0
         self.camZ = -350
         self.camY = 100
@@ -141,10 +142,12 @@ class MyApp(ShowBase):
         # self.countdownTextPath.hide()
 
         base.setBackgroundColor(r=136 / 255, g=210 / 255, b=235 / 255)
-        self.scene = self.loader.loadModel("models/environment")
-        self.scene.reparentTo(self.render)
-        self.scene.setScale(200, 200, 1)
-        self.scene.setPos(0, 0, -100)
+        # self.scene = self.loader.loadModel("models/environment")
+        # self.scene.reparentTo(self.render)
+        # self.scene.setScale(200, 200, 1)
+        # self.scene.setPos(0, 0, -100)
+
+        
 
         self.taskMgr.add(self.getAngle, "GetAngle")
 
@@ -191,15 +194,16 @@ class MyApp(ShowBase):
         self.plane.reset()
         self.taskMgr.remove("checkHoops")
         self.taskMgr.remove("movePlane")
-        self.taskMgr.remove("animateHoops")
+        # self.taskMgr.remove("animateHoops")
         self.mainMenu.mainMenuScreen.show()
 
 
     def startGame(self):
         self.generateObstacles()
+        self.generateClouds()
         self.taskMgr.add(self.checkHoops, "checkHoops")
         self.taskMgr.add(self.movePlane, "movePlane")
-        self.taskMgr.add(self.animateHoops, "animateHoops")
+        # self.taskMgr.add(self.animateHoops, "animateHoops")
         self.mainMenu.mainMenuScreen.hide()
         self.scoreTextPath.show()
         self.playing = True
@@ -445,10 +449,12 @@ class MyApp(ShowBase):
     def checkHoops(self, task):
         # get hoop Z and compare to plane Z
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
+        # print(self.hoops[0].getAncestors()[0].isHidden())
         if self.hoops[0].getPos()[1] < self.plane.actor.getPos()[1]:
             if len(self.hoops) == 1:
                 self.resetGame()
             self.hoops.pop(0).delete()
+        self.hoops[0].show() #getAncestors()[1].showThrough()
         return Task.cont
 
     def animateHoops(self, task):
@@ -517,19 +523,32 @@ class MyApp(ShowBase):
 
     def generateObstacles(self):
         for i in range(self.numObstacles):
-            hoop = Actor("assets/target.gltf")
+            hoop = Actor("assets/target2.gltf")
             hoop.setScale(50, 50, 50)
             hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
-            hoop.setHpr(0, 90, 0)
+            # hoop.setHpr(0, 0, 0)
             # hoop.setColor(1,0,0,1)
             hoop.reparentTo(self.render)
             self.hoops.append(hoop)
+
+            
 
             colliderNode2 = CollisionNode('hoopCollider')
             colliderNode2.addSolid(CollisionCapsule(0, 0, 0, 0, 0, 0.1, 1))
             hoopCollider = hoop.attachNewNode(colliderNode2)
             hoopCollider.setPythonTag("hoop", hoop)
             # hoopCollider.show()
+            if i>0: #hide all except 1st target
+                hoop.hide()
+
+    def generateClouds(self):
+        for i in range(self.numObstacles//2):
+            cloud = Actor("assets/cloud.gltf")
+            cloud.reparentTo(self.render)
+            cloud.setPos(random.randint(self.plane.leftLimit-3000, self.plane.rightLimit+3000), -700 + (i * self.hoopGap*2), random.randint(self.plane.downLimit-300, self.plane.downLimit))
+            cloud.setScale(100, 100, 100)
+            self.clouds.append(cloud)
+
 
     def getAngle(self, task):
         # print(self.angle.value)
