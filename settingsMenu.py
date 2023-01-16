@@ -24,6 +24,8 @@ class SettingsMenu():
 		self.hoopScaleValue = DirectLabel(text = "5", parent = self.settingsMenuScreen, scale = 0.04, pos = (-1.25, 0, -0.3))
 
 
+		self.resetBtn = DirectButton(text = "Reset", parent=self.settingsMenuScreen, command = self.resetGame, pos = (-1.25,0,-0.45), scale = 0.03, pad=(0.1,0.1))
+
 		self.closeBtn = DirectButton(text = "Close", parent=self.settingsMenuScreen, command = self.settingsMenuScreen.hide, pos = (-1.25,0,-0.55), scale = 0.03, pad=(0.1,0.1))
 		self.settingsMenuScreen.hide()
 
@@ -47,3 +49,7 @@ class SettingsMenu():
 		self.hoopScaleValue.setText(str(hoopScale))
 		for hoop in self.game.hoops:
 			hoop.setScale(10*hoopScale, 10*hoopScale, 10*hoopScale)
+
+	def resetGame(self):
+		self.game.resetGame()
+		self.settingsMenuScreen.hide()

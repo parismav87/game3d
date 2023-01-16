@@ -22,6 +22,7 @@ import time
 import numpy as np
 import csv
 
+
 loadPrcFileData('', 'win-size 1280 800')
 
 
@@ -188,6 +189,8 @@ class MyApp(ShowBase):
 
     def resetGame(self):
         self.playing = False
+        self.resetObstacles()
+        self.hideBaselines()
         self.score = 0
         self.scoreText.setText(str(self.score))
         self.scoreTextPath.hide()
@@ -196,6 +199,13 @@ class MyApp(ShowBase):
         self.taskMgr.remove("movePlane")
         # self.taskMgr.remove("animateHoops")
         self.mainMenu.mainMenuScreen.show()
+
+    def resetObstacles(self):
+        for hoop in self.hoops:
+            hoop.delete()
+        self.hoops = []
+        # print("deleted", len(self.hoops))
+        # self.generateObstacles()
 
 
     def startGame(self):
@@ -216,6 +226,14 @@ class MyApp(ShowBase):
             self.calibrating = False
             self.mainMenu.calibrateBtn.setText("Calibrate")
             self.extractBaselines()
+            self.showBaselines()
+
+    def showBaselines(self):
+        self.mainMenu.baselines.setText("x: "+str(self.xmin) + ", "+str(self.xmax)+ " y: "+str(self.ymin)+ ", "+ str(self.ymax))
+        self.mainMenu.baselines.show()
+
+    def hideBaselines(self):
+        self.mainMenu.baselines.hide()
 
     def center(self):
         if not self.centering:
@@ -447,6 +465,9 @@ class MyApp(ShowBase):
 
 
     def checkHoops(self, task):
+
+        # print(len(self.hoops))
+
         # get hoop Z and compare to plane Z
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
         # print(self.hoops[0].getAncestors()[0].isHidden())
@@ -522,6 +543,7 @@ class MyApp(ShowBase):
         return Task.cont
 
     def generateObstacles(self):
+        # print("generating ", len(self.hoops), self.numObstacles)
         for i in range(self.numObstacles):
             hoop = Actor("assets/target2.gltf")
             hoop.setScale(50, 50, 50)
