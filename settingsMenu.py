@@ -53,3 +53,7 @@ class SettingsMenu():
 	def resetGame(self):
 		self.game.resetGame()
 		self.settingsMenuScreen.hide()
+
+	def resetGame(self):
+		self.game.resetGame()
+		self.settingsMenuScreen.hide()

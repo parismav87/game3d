@@ -11,9 +11,9 @@ if __name__ == '__main__':
         angle = Value('f', 0.0)
         ready = Value('b', 0)
 
-        numObstacles = 100 #[20,100,500]
-        complexity = 0 #[0,1,2]
-        imshow = False #[True, False]
+        numObstacles = 100  # [20,100,500]
+        complexity = 0  # [0,1,2]
+        imshow = False  # [True, False]
 
         game = MyApp(numObstacles)
         # client = Client()
@@ -23,13 +23,12 @@ if __name__ == '__main__':
         # x = threading.Thread(target = s.run(angle,ready))
         # x.start()       
 
-
-        y = threading.Thread(target = game.go(angle, ready)) # , args = (game, angle, ready)
+        y = threading.Thread(target=game.go(angle, ready))  # , args = (game, angle, ready)
         y.start()
 
         # x.join()
         y.join()
-        
+
 
     except KeyboardInterrupt:
         s.close()

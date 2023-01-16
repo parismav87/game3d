@@ -245,12 +245,12 @@ class MyApp(ShowBase):
             self.extractCenter()
 
     def extractCenter(self):
-        if len(self.centerXarray) !=0 and len(self.centerYarray) !=0:
+        if len(self.centerXarray) != 0 and len(self.centerYarray) != 0:
             self.centerX = np.mean(self.centerXarray)
             self.centerY = np.mean(self.centerYarray)
             print(self.centerX, self.centerY)
 
-            if len(self.baselineXarray)!=0: #normalize if range exists
+            if len(self.baselineXarray) != 0:  # normalize if range exists
                 self.centerX = 2 * (self.centerX - self.xmin) / (self.xmax - self.xmin) - 1  # normalize to [-1, 1]
                 self.centerY = 2 * (self.centerY - self.ymin) / (self.ymax - self.ymin) - 1  # normalize to [-1, 1]
 
@@ -259,7 +259,6 @@ class MyApp(ShowBase):
         self.balanceRoll = 0
 
     def extractBaselines(self):
-
         if len(self.yawBaseline)!=0 and len(self.pitchBaseline)!=0 and len(self.rollBaseline)!=0:
 
 
@@ -269,7 +268,7 @@ class MyApp(ShowBase):
             self.pitchMax = np.max(self.pitchBaseline)
             self.rollMin = np.min(self.rollBaseline)
             self.rollMax = np.max(self.rollBaseline)
-            print('limits ', ' yawMin: ',self.yawMin,' yawMax: ' ,self.yawMax,' rollMin: ', self.rollMin,' rollMax: ', self.rollMax)
+            print('limits ', '\n yawMin: ',self.yawMin,'\n yawMax: ' ,self.yawMax,'\n rollMin: ', self.rollMin,'\n rollMax: ', self.rollMax)
 
 
             # self.balanceYaw = 2 * (self.balanceYaw - self.yawMin) / (self.yawMax - self.yawMin) - 1
@@ -322,24 +321,35 @@ class MyApp(ShowBase):
         iterator = PyDatagramIterator(datagram)
         yprString = iterator.getString().replace(",", ".")
         yprList = yprString.split(";")
-        #print(yprList)
+        # print(yprList)
 
-        yaw = float(yprList[0]) # x
+        yaw = float(yprList[0])  # x
         pitch = float(yprList[1])
-        roll = float(yprList[2]) # y
-
-        #print(yaw, pitch, roll)
+        roll = float(yprList[2])  # y
 
         self.currentRoll_angle = roll
         self.currentPitch_angle = pitch
         self.currentYaw_angle = yaw
 
-        if self.playing:
-            yaw = 2 * (self.currentYaw_angle - self.yawMin) / (self.yawMax - self.yawMin) - 1  # normalize to [-1, 1]
-            pitch = 2 * (self.currentPitch_angle - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1  # normalize to [-1, 1]
-            roll = 2 * (self.currentRoll_angle - self.rollMin) / (self.rollMax - self.rollMin) - 1  # normalize to [-1, 1]
+        # Lathos
+        # if self.playing:
+        #    yaw = 2 * (self.currentYaw_angle - self.yawMin) / (self.yawMax - self.yawMin) - 1  # normalize to [-1, 1]
+        #    pitch = 2 * (self.currentPitch_angle - self.pitchMin) / (self.pitchMax - self.pitchMin) - 1  # normalize to [-1, 1]
+        #    roll = 2 * (self.currentRoll_angle - self.rollMin) / (self.rollMax - self.rollMin) - 1  # normalize to [-1, 1]
 
-        #print(self.currentYaw_angle, self.currentPitch_angle, self.currentRoll_angle)
+        if self.playing:
+            if self.currentYaw_angle > 0:
+                yaw = (self.currentYaw_angle) / (self.yawMax)
+            else:
+                yaw = -1 * (self.currentYaw_angle) / (self.yawMin)
+            if self.currentRoll_angle > 0:
+                roll = (self.currentRoll_angle) / (self.rollMax)
+            else:
+                roll = -1 * (self.currentRoll_angle) / (self.rollMin)
+
+                # yaw = (self.currentYaw_angle - self.yawMin) / (self.yawMax - self.yawMin)
+
+        # print(self.currentYaw_angle, self.currentPitch_angle, self.currentRoll_angle)
 
         # if not self.collecting:
         #     self.collecting = True
@@ -351,41 +361,41 @@ class MyApp(ShowBase):
         self.pitch = pitch
         self.roll = -roll
 
-
+        # print(self.yaw, self.roll)
 
         if self.calibrating:
             self.yawBaseline.append(self.currentYaw_angle)
             self.pitchBaseline.append(self.currentPitch_angle)
             self.rollBaseline.append(self.currentRoll_angle)
-        # print(pressurex,pressurey)
 
         if self.centering:
             self.centerYawarray.append(self.yaw)
             self.centerPitcharray.append(self.roll)
-        #print(pressurex, pressurey)
+        # print(pressurex, pressurey)
 
         if abs(self.yaw) >= self.balanceYaw + self.movementThreshold:
             if self.yaw < self.balanceYaw:
-                #print("moving left")
+                # print("moving left")
 
                 self.plane.stopMovingRight()
-                self.plane.moveLeft(self.yaw/2)
+                self.plane.moveLeft(self.yaw / 2)
             else:
-                #print("moving right")
+                # print("moving right")
                 self.plane.stopMovingLeft()
-                self.plane.moveRight(self.yaw/2)
+                self.plane.moveRight(self.yaw / 2)
 
         if abs(self.roll) >= self.balanceRoll + self.movementThreshold:
             if self.roll < self.balanceRoll:
-                #print("moving down")
+                # print("moving down")
                 self.plane.stopMovingUp()
-                self.plane.moveDown(self.roll/2)
+                self.plane.moveDown(self.roll / 2)
             else:
-                #print("moving up")
+                # print("moving up")
                 self.plane.stopMovingDown()
-                self.plane.moveUp(self.roll/2)
+                self.plane.moveUp(self.roll / 2)
 
-        if abs(self.yaw) < self.balanceYaw + self.movementThreshold and abs(self.roll) < self.balanceRoll + self.movementThreshold: # balanced (no move)
+        if abs(self.yaw) < self.balanceYaw + self.movementThreshold and abs(
+                self.roll) < self.balanceRoll + self.movementThreshold:  # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
@@ -409,7 +419,6 @@ class MyApp(ShowBase):
         # xy = re.sub(r'[^\x00-\x7F]+','-', xy)
         pressurex = float(xy[0])
         pressurey = float(xy[1])
-
 
         # xy[0][i] xy[0][i-1]
         if self.playing:
@@ -437,26 +446,27 @@ class MyApp(ShowBase):
 
         if abs(pressurex) >= self.centerX + self.movementThreshold:
             if pressurex < self.centerX:
-                #print("moving left")
+                # print("moving left")
 
                 self.plane.stopMovingRight()
                 self.plane.moveLeft(pressurex)
             else:
-                #print("moving right")
+                # print("moving right")
                 self.plane.stopMovingLeft()
                 self.plane.moveRight(pressurex)
 
         if abs(pressurey) >= self.centerY + self.movementThreshold:
             if pressurey < self.centerY:
-                #print("moving down")
+                # print("moving down")
                 self.plane.stopMovingUp()
                 self.plane.moveDown(pressurey)
             else:
-                #print("moving up")
+                # print("moving up")
                 self.plane.stopMovingDown()
                 self.plane.moveUp(pressurey)
 
-        if abs(pressurex) < self.centerX + self.movementThreshold and abs(pressurey) < self.centerY + self.movementThreshold: # balanced (no move)
+        if abs(pressurex) < self.centerX + self.movementThreshold and abs(
+                pressurey) < self.centerY + self.movementThreshold:  # balanced (no move)
             self.plane.stopMovingUp()
             self.plane.stopMovingDown()
             self.plane.stopMovingLeft()
@@ -535,11 +545,12 @@ class MyApp(ShowBase):
 
             currentPos = self.plane.actor.getPos()
             firstObstacle = self.hoops[0].getPos()
-            row = [str(currentPos[0]) + ',' + str(currentPos[2]) + ',' + str(currentPos[1]) + ',' + str(firstObstacle[0]) + ',' + str(firstObstacle[2]) + ',' + str(firstObstacle[1]) + ',' + str(self.pressurex) + ',' + str(self.pressurey)]
+            row = [str(currentPos[0]), str(currentPos[2]), str(currentPos[1]), str(firstObstacle[0]),
+                   str(firstObstacle[2]), str(firstObstacle[1]), str(self.pressurex), str(self.pressurey)]
             self.csvWriter.writerow(row)
 
             camCoords = base.camera.getPos()
-            base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2]) #+ self.camY
+            base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2])  # + self.camY
         return Task.cont
 
     def generateObstacles(self):
