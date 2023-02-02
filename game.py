@@ -96,6 +96,10 @@ class MyApp(ShowBase):
         self.currentPitch_angle = 0
         self.currentRoll_angle = 0
 
+        self.recalibrating = False
+        self.recalibrated = False
+        self.stable_and_vertical = False
+
 
     def initialize(self, angle, ready):
 
@@ -215,7 +219,7 @@ class MyApp(ShowBase):
         self.taskMgr.add(self.movePlane, "movePlane")
         # self.taskMgr.add(self.animateHoops, "animateHoops")
         self.mainMenu.mainMenuScreen.hide()
-        self.scoreTextPath.show()
+        # self.scoreTextPath.show() 
         self.playing = True
 
     def calibrate(self):
@@ -326,6 +330,10 @@ class MyApp(ShowBase):
         yaw = float(yprList[0])  # x
         pitch = float(yprList[1])
         roll = float(yprList[2])  # y
+        self.stable_and_vertical = yprList[3] in ["True"]
+        if self.stable_and_vertical:
+            self.recalibrated = True
+        # print(self.stable_and_vertical)
 
         self.currentRoll_angle = roll
         self.currentPitch_angle = pitch
@@ -481,6 +489,13 @@ class MyApp(ShowBase):
         # get hoop Z and compare to plane Z
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
         # print(self.hoops[0].getAncestors()[0].isHidden())
+
+        if len(self.hoops) % 20 == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
+            self.recalibrating = True
+        elif len(self.hoops) % 20 != 0:
+            self.recalibrating = False
+            self.recalibrated = False
+
         if self.hoops[0].getPos()[1] < self.plane.actor.getPos()[1]:
             if len(self.hoops) == 1:
                 self.resetGame()
@@ -507,6 +522,49 @@ class MyApp(ShowBase):
             self.resetGame()
 
     def movePlane(self, task):
+
+        if self.recalibrating and not self.stable_and_vertical:
+            planePos = self.plane.actor.getPos()
+            planeHpr = self.plane.actor.getHpr()
+            # print(planeHpr[2])
+            # print(planePos[2])
+
+            newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
+            if newX > self.plane.rightLimit:
+                newX = self.plane.rightLimit
+            elif newX < self.plane.leftLimit:
+                newX = self.plane.leftLimit
+
+            newY = planePos[2] - self.plane.downMove + self.plane.upMove
+            if newY > self.plane.upLimit:
+                newY = self.plane.upLimit
+            elif newY < self.plane.downLimit:
+                newY = self.plane.downLimit
+
+
+            # self.plane.actor.setPos(newX, planePos[1] + self.plane.speed, newY)   #dont move plane forward
+
+            if self.plane.leftMove != 0 or self.plane.rightMove != 0:
+                self.plane.rotatePlaneHorizontal(planeHpr)
+            else:
+                self.plane.recoverRotationHorizontal(planeHpr)
+
+            planeHpr = self.plane.actor.getHpr()
+
+            if self.plane.upMove != 0 or self.plane.downMove != 0:
+                self.plane.rotatePlaneVertical(planeHpr)
+            else:
+                self.plane.recoverRotationVertical(planeHpr)
+
+            # currentPos = self.plane.actor.getPos()
+            # firstObstacle = self.hoops[0].getPos()
+            # row = [str(currentPos[0]), str(currentPos[2]), str(currentPos[1]), str(firstObstacle[0]),
+            #        str(firstObstacle[2]), str(firstObstacle[1]), str(self.pressurex), str(self.pressurey)]
+            # self.csvWriter.writerow(row)
+
+            # camCoords = base.camera.getPos()
+            # base.camera.setPos(camCoords[0], planePos[1] + self.camZ, camCoords[2])  # + self.camY
+            return Task.cont
 
         if self.playing:
 
