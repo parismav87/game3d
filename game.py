@@ -122,7 +122,7 @@ class MyApp(ShowBase):
         self.scoreTextPath.setPos(1, 0, 0.8)
         self.scoreTextPath.hide()
 
-        self.outputCSV = open('movement.csv', 'w', newline= '')
+        self.outputCSV = open('test_optitrack.csv', 'w', newline= '')
         self.csvWriter = csv.writer(self.outputCSV, delimiter=',')
         self.csvWriter.writerow(['planeX,planeY,planeZ,targetX,targetY,targetZ,pressureX,pressureY'])
 
@@ -312,7 +312,7 @@ class MyApp(ShowBase):
             if self.cReader.getData(datagram):
                 # print("get data")
                 # print(datagram)
-                # self.incomingCOP(datagram)
+                #self.incomingCOP(datagram)
                 self.incomingYPR(datagram)
 
         return Task.cont
@@ -559,8 +559,8 @@ class MyApp(ShowBase):
             hoop = Actor("assets/target2.gltf")
             hoop.setScale(50, 50, 50)
             hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
-            # hoop.setHpr(0, 0, 0)
-            # hoop.setColor(1,0,0,1)
+            hoop.setHpr(90, 90, 90)
+            hoop.setColor(1,0,0,1)
             hoop.reparentTo(self.render)
             self.hoops.append(hoop)
 

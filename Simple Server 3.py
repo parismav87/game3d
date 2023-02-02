@@ -312,8 +312,9 @@ try:
                             step += 1
                             if step == 18:
                                 pkg = NetDatagram()
-                                pkg.addString(str(yaw) + ';' + str(pitch) + ';' + str(roll))
-                                #cWriter.send(pkg, myConnection)
+                                # stable_and_vert True after 2.5 s stable and vertical
+                                pkg.addString(str(yaw) + ';' + str(pitch) + ';' + str(roll)+ ';' + str(stable_and_vert))
+                                cWriter.send(pkg, myConnection)
                                 #print(str(yaw) + ';' + ';' + str(roll))
                                 yaw_list.append(yaw)
                                 pitch_list.append(pitch)

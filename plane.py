@@ -21,7 +21,7 @@ class Plane():
         self.upMove = 0
         self.downMove = 0
         self.xAngle = 0
-        self.yAngle = 0
+        self.yAngle = 90
         self.zAngle = 0
         self.rightLimit = 140
         self.leftLimit = -140

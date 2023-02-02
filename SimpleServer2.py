@@ -82,7 +82,7 @@ try:
             pkg = NetDatagram()
             pkg.addString(CoPX+';'+CoPY)
 
-            cWriter.send(pkg, myConnection)
+            #cWriter.send(pkg, myConnection)
             time.sleep(1/12)
 
 except KeyboardInterrupt:
