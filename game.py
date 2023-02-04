@@ -99,6 +99,7 @@ class MyApp(ShowBase):
         self.recalibrating = False
         self.recalibrated = False
         self.stable_and_vertical = False
+        self.pausePerHoops = 10
 
 
     def initialize(self, angle, ready):
@@ -331,7 +332,7 @@ class MyApp(ShowBase):
         pitch = float(yprList[1])
         roll = float(yprList[2])  # y
         self.stable_and_vertical = yprList[3] in ["True"]
-        if self.stable_and_vertical:
+        if self.stable_and_vertical and len(self.hoops) % self.pausePerHoops == 0 and len(self.hoops) != self.numObstacles:
             self.recalibrated = True
         # print(self.stable_and_vertical)
 
@@ -490,9 +491,9 @@ class MyApp(ShowBase):
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
         # print(self.hoops[0].getAncestors()[0].isHidden())
 
-        if len(self.hoops) % 20 == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
+        if len(self.hoops) % self.pausePerHoops == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
             self.recalibrating = True
-        elif len(self.hoops) % 20 != 0:
+        elif len(self.hoops) % self.pausePerHoops != 0:
             self.recalibrating = False
             self.recalibrated = False
 
