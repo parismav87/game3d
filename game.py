@@ -523,7 +523,7 @@ class MyApp(ShowBase):
 
     def movePlane(self, task):
 
-        if self.recalibrating and not self.stable_and_vertical:
+        if self.recalibrating and not self.stable_and_vertical and not self.recalibrated:
             planePos = self.plane.actor.getPos()
             planeHpr = self.plane.actor.getHpr()
             # print(planeHpr[2])
