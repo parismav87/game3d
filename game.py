@@ -100,6 +100,7 @@ class MyApp(ShowBase):
         self.recalibrated = False
         self.stable_and_vertical = False
         self.pausePerHoops = 10
+        self.useYPR = True
 
 
     def initialize(self, angle, ready):
@@ -317,8 +318,10 @@ class MyApp(ShowBase):
             if self.cReader.getData(datagram):
                 # print("get data")
                 # print(datagram)
-                #self.incomingCOP(datagram)
-                self.incomingYPR(datagram)
+                if self.useYPR:
+                    self.incomingYPR(datagram)
+                else:
+                    self.incomingCOP(datagram)
 
         return Task.cont
 
@@ -524,7 +527,7 @@ class MyApp(ShowBase):
 
     def movePlane(self, task):
 
-        if self.recalibrating and not self.stable_and_vertical and not self.recalibrated:
+        if self.recalibrating and not self.stable_and_vertical and not self.recalibrated and self.useYPR:
             planePos = self.plane.actor.getPos()
             planeHpr = self.plane.actor.getHpr()
             # print(planeHpr[2])
