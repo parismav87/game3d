@@ -4,7 +4,7 @@ from direct.gui.DirectGui import *
 class SettingsMenu():
 	def __init__(self, game):
 		self.game = game
-		self.settingsMenuScreen = DirectDialog(frameSize = (-1.5, -1, 0.6, -0.6), fadeScreen = 0.4, relief = DGG.FLAT)
+		self.settingsMenuScreen = DirectDialog(frameSize = (-1.5, -1, 0.6, -0.8), fadeScreen = 0.4, relief = DGG.FLAT)
 		label = DirectLabel(text = "Settings", parent = self.settingsMenuScreen, scale = 0.06, pos = (-1.25, 0, 0.5))
 
 		thresholdLabel = DirectLabel(text = "Balance threshold", parent = self.settingsMenuScreen, scale = 0.04, pos = (-1.25, 0, 0.4))
@@ -24,10 +24,20 @@ class SettingsMenu():
 		self.hoopScaleValue = DirectLabel(text = "5", parent = self.settingsMenuScreen, scale = 0.04, pos = (-1.25, 0, -0.3))
 
 
-		self.resetBtn = DirectButton(text = "Reset", parent=self.settingsMenuScreen, command = self.resetGame, pos = (-1.25,0,-0.45), scale = 0.03, pad=(0.1,0.1))
+		self.csvName = DirectEntry(text = "", scale=.04, parent = self.settingsMenuScreen, command=self.setText, initialText="output.csv", numLines = 3, focus=0, focusInCommand=self.clearText, pos = (-1.35,0,-0.40), width = 8)
 
-		self.closeBtn = DirectButton(text = "Close", parent=self.settingsMenuScreen, command = self.settingsMenuScreen.hide, pos = (-1.25,0,-0.55), scale = 0.03, pad=(0.1,0.1))
+		self.resetBtn = DirectButton(text = "Reset", parent=self.settingsMenuScreen, command = self.resetGame, pos = (-1.25,0,-0.55), scale = 0.03, pad=(0.1,0.1))
+
+		self.closeBtn = DirectButton(text = "Close", parent=self.settingsMenuScreen, command = self.settingsMenuScreen.hide, pos = (-1.25,0,-0.65), scale = 0.03, pad=(0.1,0.1))
 		self.settingsMenuScreen.hide()
+
+
+	def clearText(self):
+		self.csvName.enterText('')
+
+	def setText(self, text):
+		self.game.csvName = text
+		print(self.game.csvName)
 
 	def setThreshold(self):
 		thresh = round(self.thresholdSlider['value'],2)
