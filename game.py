@@ -158,7 +158,7 @@ class MyApp(ShowBase):
 
         self.taskMgr.add(self.getAngle, "GetAngle")
 
-        self.plane = Plane("assets/luft6.gltf")
+        self.plane = Plane("assets/luft4.gltf")
         self.plane.actor.reparentTo(self.render)
         planePos = self.plane.actor.getPos()
 
