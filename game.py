@@ -130,9 +130,7 @@ class MyApp(ShowBase):
         self.scoreTextPath.setPos(1, 0, 0.8)
         self.scoreTextPath.hide()
 
-        self.outputCSV = open(self.csvName, 'w', newline= '')
-        self.csvWriter = csv.writer(self.outputCSV, delimiter=',')
-        self.csvWriter.writerow(['planeX,planeY,planeZ,targetX,targetY,targetZ,pressureX,pressureY'])
+        
 
         # self.calibrationText = TextNode('calibrationText')
         # self.calibrationText.setText("Calibrating...")
@@ -192,6 +190,8 @@ class MyApp(ShowBase):
         self.mainMenu = MainMenu(self)
         self.settingsMenu = SettingsMenu(self)
 
+
+
     def openSettings(self):
         self.settingsMenu.settingsMenuScreen.show()
 
@@ -215,8 +215,13 @@ class MyApp(ShowBase):
         # print("deleted", len(self.hoops))
         # self.generateObstacles()
 
+    def initCSV(self):
+        self.outputCSV = open(self.csvName, 'w', newline= '')
+        self.csvWriter = csv.writer(self.outputCSV, delimiter=',')
+        self.csvWriter.writerow(['planeX,planeY,planeZ,targetX,targetY,targetZ,pressureX,pressureY'])
 
     def startGame(self):
+        self.initCSV()
         self.generateObstacles()
         self.generateClouds()
         self.taskMgr.add(self.checkHoops, "checkHoops")

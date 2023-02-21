@@ -37,7 +37,7 @@ class SettingsMenu():
 
 	def setText(self, text):
 		self.game.csvName = text
-		print(self.game.csvName)
+		# print(self.game.csvName)
 
 	def setThreshold(self):
 		thresh = round(self.thresholdSlider['value'],2)
