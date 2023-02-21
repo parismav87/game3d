@@ -102,6 +102,8 @@ class MyApp(ShowBase):
         self.pausePerHoops = 10
         self.useYPR = True
 
+        self.csvName = 'output.csv'
+
 
     def initialize(self, angle, ready):
 
@@ -128,7 +130,7 @@ class MyApp(ShowBase):
         self.scoreTextPath.setPos(1, 0, 0.8)
         self.scoreTextPath.hide()
 
-        self.outputCSV = open('test_optitrack.csv', 'w', newline= '')
+        self.outputCSV = open(self.csvName, 'w', newline= '')
         self.csvWriter = csv.writer(self.outputCSV, delimiter=',')
         self.csvWriter.writerow(['planeX,planeY,planeZ,targetX,targetY,targetZ,pressureX,pressureY'])
 
