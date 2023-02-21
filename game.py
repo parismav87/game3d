@@ -628,7 +628,7 @@ class MyApp(ShowBase):
             hoop = Actor("assets/target2.gltf")
             hoop.setScale(50, 50, 50)
             hoop.setPos(random.randint(self.plane.leftLimit, self.plane.rightLimit), -700 + (i * self.hoopGap), random.randint(self.plane.downLimit, self.plane.upLimit))
-            hoop.setHpr(90, 90, 90)
+            hoop.setHpr(0, 0, 0)
             hoop.setColor(1,0,0,1)
             hoop.reparentTo(self.render)
             self.hoops.append(hoop)
