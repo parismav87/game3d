@@ -99,9 +99,10 @@ class MyApp(ShowBase):
         self.recalibrating = False
         self.recalibrated = False
         self.stable_and_vertical = False
-        self.pausePerHoops = 1
+        self.pausePerHoops = 10
         self.useYPR = True
         self.framesSincePause = 0
+        self.pauseDuration = 90 #frames for COP pause
 
         self.csvName = 'output.csv'
 
@@ -429,14 +430,7 @@ class MyApp(ShowBase):
 
     def incomingCOP(self, datagram):
 
-        # print(datagram)
-        if self.recalibrating:
-            self.framesSincePause += 1
 
-        if self.framesSincePause == 80:
-            self.recalibrated = True
-            self.framesSincePause = 0
-            self.extractBaselines()
 
         iterator = PyDatagramIterator(datagram)
         pressure = iterator.getString().replace(",", ".")
@@ -510,6 +504,7 @@ class MyApp(ShowBase):
         # print(self.hoops[0].getPos()[1], self.plane.actor.getPos()[1])
         # print(self.hoops[0].getAncestors()[0].isHidden())
 
+
         if len(self.hoops) % self.pausePerHoops == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
             self.recalibrating = True
         elif len(self.hoops) % self.pausePerHoops != 0:
@@ -548,6 +543,14 @@ class MyApp(ShowBase):
             planeHpr = self.plane.actor.getHpr()
             # print(planeHpr[2])
             # print(planePos[2])
+
+            if not self.useYPR:
+                self.framesSincePause += 1
+
+            if not self.useYPR and self.framesSincePause == self.pauseDuration:
+                self.recalibrated = True
+                self.framesSincePause = 0
+                self.extractBaselines()
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
