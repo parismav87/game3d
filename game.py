@@ -99,8 +99,9 @@ class MyApp(ShowBase):
         self.recalibrating = False
         self.recalibrated = False
         self.stable_and_vertical = False
-        self.pausePerHoops = 10
+        self.pausePerHoops = 1
         self.useYPR = True
+        self.framesSincePause = 0
 
         self.csvName = 'output.csv'
 
@@ -382,6 +383,7 @@ class MyApp(ShowBase):
 
         # print(self.yaw, self.roll)
 
+
         if self.calibrating:
             self.yawBaseline.append(self.currentYaw_angle)
             self.pitchBaseline.append(self.currentPitch_angle)
@@ -428,6 +430,13 @@ class MyApp(ShowBase):
     def incomingCOP(self, datagram):
 
         # print(datagram)
+        if self.recalibrating:
+            self.framesSincePause += 1
+
+        if self.framesSincePause == 80:
+            self.recalibrated = True
+            self.framesSincePause = 0
+            self.extractBaselines()
 
         iterator = PyDatagramIterator(datagram)
         pressure = iterator.getString().replace(",", ".")
@@ -534,7 +543,7 @@ class MyApp(ShowBase):
 
     def movePlane(self, task):
 
-        if self.recalibrating and not self.stable_and_vertical and not self.recalibrated and self.useYPR:
+        if self.recalibrating and not self.stable_and_vertical and not self.recalibrated:
             planePos = self.plane.actor.getPos()
             planeHpr = self.plane.actor.getHpr()
             # print(planeHpr[2])
