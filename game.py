@@ -550,7 +550,7 @@ class MyApp(ShowBase):
             if not self.useYPR and self.framesSincePause == self.pauseDuration:
                 self.recalibrated = True
                 self.framesSincePause = 0
-                self.extractBaselines()
+                # self.extractBaselines()
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
