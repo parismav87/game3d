@@ -430,8 +430,6 @@ class MyApp(ShowBase):
 
     def incomingCOP(self, datagram):
 
-
-
         iterator = PyDatagramIterator(datagram)
         pressure = iterator.getString().replace(",", ".")
         # print(pressure)
@@ -456,12 +454,12 @@ class MyApp(ShowBase):
         self.pressurey = pressurey
         self.pressurex = pressurex
 
-        if self.calibrating:
+        if self.calibrating or self.recalibrating:
             self.baselineXarray.append(pressurex)
             self.baselineYarray.append(pressurey)
         # print(pressurex,pressurey)
 
-        if self.centering:
+        if self.centering or self.recalibrating:
             self.centerXarray.append(pressurex)
             self.centerYarray.append(pressurey)
         # print(pressurex, pressurey)
@@ -507,6 +505,12 @@ class MyApp(ShowBase):
 
         if len(self.hoops) % self.pausePerHoops == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
             self.recalibrating = True
+            #reset baselines
+            self.centerXarray = []
+            self.centerYarray = []
+            self.baselineXarray = []
+            self.baselineYarray = []
+
         elif len(self.hoops) % self.pausePerHoops != 0:
             self.recalibrating = False
             self.recalibrated = False
@@ -550,7 +554,7 @@ class MyApp(ShowBase):
             if not self.useYPR and self.framesSincePause == self.pauseDuration:
                 self.recalibrated = True
                 self.framesSincePause = 0
-                # self.extractBaselines()
+                self.extractBaselines()
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
