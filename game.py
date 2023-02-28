@@ -454,7 +454,7 @@ class MyApp(ShowBase):
         self.pressurey = pressurey
         self.pressurex = pressurex
 
-        if self.calibrating or self.recalibrating:
+        if self.calibrating:
             self.baselineXarray.append(pressurex)
             self.baselineYarray.append(pressurey)
         # print(pressurex,pressurey)
@@ -504,12 +504,11 @@ class MyApp(ShowBase):
 
 
         if len(self.hoops) % self.pausePerHoops == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
+            print("in here")
             self.recalibrating = True
-            #reset baselines
+            #reset center
             self.centerXarray = []
             self.centerYarray = []
-            self.baselineXarray = []
-            self.baselineYarray = []
 
         elif len(self.hoops) % self.pausePerHoops != 0:
             self.recalibrating = False
@@ -554,7 +553,7 @@ class MyApp(ShowBase):
             if not self.useYPR and self.framesSincePause == self.pauseDuration:
                 self.recalibrated = True
                 self.framesSincePause = 0
-                self.extractBaselines()
+                self.extractCenter()
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
