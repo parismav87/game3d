@@ -560,7 +560,6 @@ class MyApp(ShowBase):
                 self.extractCenter()
                 self.resetDone = False
 
-            print("moving plane")
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
@@ -575,7 +574,7 @@ class MyApp(ShowBase):
                 newY = self.plane.downLimit
 
 
-            # self.plane.actor.setPos(newX, planePos[1] + self.plane.speed, newY)   #dont move plane forward
+            self.plane.actor.setPos(newX, planePos[1], newY)   #dont move plane forward
 
             if self.plane.leftMove != 0 or self.plane.rightMove != 0:
                 self.plane.rotatePlaneHorizontal(planeHpr)
