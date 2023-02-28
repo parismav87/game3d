@@ -103,6 +103,7 @@ class MyApp(ShowBase):
         self.useYPR = True
         self.framesSincePause = 0
         self.pauseDuration = 90 #frames for COP pause
+        self.resetDone = False
 
         self.csvName = 'output.csv'
 
@@ -492,6 +493,11 @@ class MyApp(ShowBase):
             self.plane.stopMovingLeft()
             self.plane.stopMovingRight()
 
+    def resetCenter(self):
+        if not self.resetDone:
+            self.centerXarray = []
+            self.centerYarray = []
+            self.resetDone = True
 
 
     def checkHoops(self, task):
@@ -504,11 +510,9 @@ class MyApp(ShowBase):
 
 
         if len(self.hoops) % self.pausePerHoops == 0 and self.recalibrated == False and len(self.hoops) != self.numObstacles:
-            print("in here")
             self.recalibrating = True
-            #reset center
-            self.centerXarray = []
-            self.centerYarray = []
+            self.resetCenter()
+            
 
         elif len(self.hoops) % self.pausePerHoops != 0:
             self.recalibrating = False
@@ -554,6 +558,9 @@ class MyApp(ShowBase):
                 self.recalibrated = True
                 self.framesSincePause = 0
                 self.extractCenter()
+                self.resetDone = False
+
+            print("moving plane")
 
             newX = planePos[0] - self.plane.leftMove + self.plane.rightMove
             if newX > self.plane.rightLimit:
